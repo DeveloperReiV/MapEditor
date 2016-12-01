@@ -1,7 +1,8 @@
 var map, OSMLayer, mapView, drawLayer;  //слои карты
 var geoJSON = new ol.format.GeoJSON();  //экземпляр класса geoJSON
-var typeDraw;   //тип графики выбранный на панели инструментов
-var drawing;    //хранит графические данные
+var typeDraw;                           //тип графики выбранный на панели инструментов
+var typeInteraction = null;             //ссылка на выбранный тип взаимодействия
+
 var sourceDraw = new ol.source.Vector({wrapX: false}); //источник графики для векторного слоя
 
 //Инициализация карты при загрузке страницы
@@ -23,7 +24,7 @@ function initMap()
     //вид карты (зум и координаты центра)
     mapView = new ol.View({
         center: ol.proj.fromLonLat([36.2754200,54.5293000]), //координаты Калуги
-        zoom: 11,
+        zoom: 11
     });
 
     //Контейнер карты
@@ -39,7 +40,6 @@ function initMap()
         projection: 'EPSG:4326',                            //система координат
         className: 'posControlMousePosition'                //css класс
     });
-
     var controlFullScreen = new ol.control.FullScreen();    //контроллер отображения карты на весь экран
     var controlScaleLine = new ol.control.ScaleLine();      //контроллер отображения масштаба
 
@@ -48,31 +48,49 @@ function initMap()
     map.addControl(controlFullScreen);
     map.addControl(controlScaleLine);
 
-
     document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
-
-    var a=OSMLayer.getSource().getProjection().getCode();
-    //alert(a);
 }
 
-//создание и добавление графических данных
-function addInteraction(){
+//Функция рисования
+function drawInteraction()
+{
     if (typeDraw !== 'None') {
-        drawing = new ol.interaction.Draw({ //создаем графические данные
-            source: sourceDraw,             //рисовать здесь
-            type: typeDraw                  //данные данного типа
+        //тип взаимодействия "создание графических данных"
+        typeInteraction = new ol.interaction.Draw({
+            source: sourceDraw,                     //рисовать здесь
+            type: typeDraw                          //данные данного типа
         });
-        map.addInteraction(drawing);        //добавляем данные к карте
+        map.addInteraction(typeInteraction);        //добавляем данные к карте
     }
 }
 
-//выбор контроллера на панели управления
-document.getElementById('controlToggle11').onchange = function(){
-    map.removeInteraction(drawing);         //удаляем данные с карты
-    addInteraction();
-}
-addInteraction();
+//Быбор элемента на карте
+function selectInteraction(){
+    //установка взаимодействия (выбор по клику мыши)
+    var selectInteraction = function(){
+        //тип взаимодействия "выбор по клику мыши"
+        typeInteraction = new ol.interaction.Select({
+            condition: ol.events.condition.click
+        });
 
+        if (typeInteraction !== null) {
+            map.addInteraction(typeInteraction);     //выбор объекта (реализуем взаимодействие)
+        }
+    };
+    selectInteraction();    //выполняем
+}
+
+//выбор контроллера рисования на панели управления
+document.getElementById('controlToggle').onchange = function(){
+    map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
+    drawInteraction();
+};
+
+//Выбор котроллера "выбрать"
+document.getElementById('selectToggle').onchange = function(){
+    map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
+    selectInteraction();
+};
 
 //выбор контроллера на понели рисования
 function toggleControl(element) {

@@ -28,7 +28,7 @@ if($_POST['item']) {
 <body onload="initMap()">
 <div id="map" class="map" style="width:100%; height:70%"></div>
 <div align="center">
-    <ul id="controlToggle11">
+    <ul id="controlToggle">
         <li style="display: inline-block;">
             <input type="radio" name="type" value="None" id="noneToggle" onclick="toggleControl(this);" checked="checked"/>
             <label for="noneToggle">Навигация</label>
@@ -38,6 +38,12 @@ if($_POST['item']) {
             <label for="polygonToggle">Нарисовать полигон</label>
         </li>
     </ul>
+
+    <li style="display: inline-block;">
+        <input type="radio" name="type" value="Select" id="selectToggle""/>
+        <label for="selectToggle">Выбрать</label>
+    </li><br><br>
+
     <input type="submit" value="Записать JSON" onclick="sendJSON()">
     <input type="submit" value="Считать JSON" onclick="showJSON()">
 </div>
