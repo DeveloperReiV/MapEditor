@@ -22,8 +22,8 @@ function initMap()
 
     //вид карты (зум и координаты центра)
     mapView = new ol.View({
-        center: ol.proj.transform([2.1833, 41.3833], 'EPSG:4326', 'EPSG:3857'),
-        zoom: 6
+        center: ol.proj.fromLonLat([36.2754200,54.5293000]), //координаты Калуги
+        zoom: 11,
     });
 
     //Контейнер карты
@@ -33,7 +33,26 @@ function initMap()
         view: mapView
     });
 
+    //Контроллер положения мыши на карте
+    var controlMousePosition = new ol.control.MousePosition({
+        coordinateFormat: ol.coordinate.createStringXY(4),  //формат вывода данных (4 знака после запятой)
+        projection: 'EPSG:4326',                            //система координат
+        className: 'posControlMousePosition'                //css класс
+    });
+
+    var controlFullScreen = new ol.control.FullScreen();    //контроллер отображения карты на весь экран
+    var controlScaleLine = new ol.control.ScaleLine();      //контроллер отображения масштаба
+
+    //добавляем контроллеры
+    map.addControl(controlMousePosition);
+    map.addControl(controlFullScreen);
+    map.addControl(controlScaleLine);
+
+
     document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
+
+    var a=OSMLayer.getSource().getProjection().getCode();
+    //alert(a);
 }
 
 //создание и добавление графических данных
