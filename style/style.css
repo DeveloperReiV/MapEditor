@@ -1,6 +1,6 @@
 /*Позиция элемента управления MousePosition*/
 .posControlMousePosition {
     position:absolute;
-    left: 40%;
+    left: 50%;
     top: 96%;
 }

@@ -66,18 +66,14 @@ function drawInteraction()
 
 //Быбор элемента на карте
 function selectInteraction(){
-    //установка взаимодействия (выбор по клику мыши)
-    var selectInteraction = function(){
-        //тип взаимодействия "выбор по клику мыши"
-        typeInteraction = new ol.interaction.Select({
-            condition: ol.events.condition.click
-        });
+    //тип взаимодействия "выбор по клику мыши"
+    typeInteraction = new ol.interaction.Select({
+        condition: ol.events.condition.click
+    });
 
-        if (typeInteraction !== null) {
-            map.addInteraction(typeInteraction);     //выбор объекта (реализуем взаимодействие)
-        }
-    };
-    selectInteraction();    //выполняем
+    if (typeInteraction !== null) {
+        map.addInteraction(typeInteraction);     //выбор объекта (реализуем взаимодействие)
+    }
 }
 
 //выбор контроллера рисования на панели управления
