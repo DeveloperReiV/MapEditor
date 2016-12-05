@@ -3,6 +3,8 @@ $file="drawing.json";
 
 if(file_exists($file)) {
     $dataJSON = file_get_contents($file);  //считываем файл
+    $arr=json_decode($dataJSON);
+    //print_r($arr);
 }
 
 if($_POST['item']) {
@@ -57,6 +59,11 @@ if($_POST['item']) {
                     <label for="selectToggle">Выбрать</label>
                 </li>
 
+                <li style="display: inline-block;">
+                    <input type="radio" name="type" value="Marker" id="markerToggle""/>
+                    <label for="markerToggle">Добавить маркер</label>
+                </li>
+
 
                 <br/>
 
@@ -73,6 +80,7 @@ if($_POST['item']) {
 
 <div class="row">
     <div id="map" class="map" style="width:100%; height:70%"></div>
+    <div id="pos"></div>
 </div>
 
 </body>

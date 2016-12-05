@@ -5,6 +5,8 @@ var typeInteraction = null;             //ссылка на выбранный тип взаимодействия
 
 var sourceDraw = new ol.source.Vector({wrapX: false, format: geoJSON}); //источник графики для векторного слоя
 
+var posX, posY;                         //координаты щелчка мыши
+
 //Инициализация карты при загрузке страницы
 function initMap()
 {
@@ -19,6 +21,7 @@ function initMap()
         source: sourceDraw,               //берем данные из источника графики
         name:'Draw',
         format: geoJSON,                   //храним данные в формате JSON
+        projection: 'EPSG:4326',
         wrapX: false
     });
 
@@ -37,7 +40,7 @@ function initMap()
 
     //Контроллер положения мыши на карте
     var controlMousePosition = new ol.control.MousePosition({
-        coordinateFormat: ol.coordinate.createStringXY(4),  //формат вывода данных (4 знака после запятой)
+        //coordinateFormat: ol.coordinate.toStringHDMS,  //формат вывода данных (4 знака после запятой)
         projection: 'EPSG:4326',                            //система координат
         className: 'posControlMousePosition'                //css класс
     });
@@ -50,6 +53,20 @@ function initMap()
     map.addControl(controlScaleLine);
 
     document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
+
+
+
+        //событие клик по карте (получаем координаты)
+        map.on('click', function(evt) {
+            var hdms = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
+            posX=hdms[0];   //долгота
+            posY=hdms[1];   //широта
+
+            if(document.getElementById('markerToggle').checked){
+                addMarker(posX,posY);
+            }
+        });
+
 }
 
 
@@ -70,7 +87,7 @@ function sendJSON(){
             url: 'index.php',
             data: {
                 item: json
-            },
+            }
         });
     }
 }
@@ -107,6 +124,33 @@ function selectInteraction(){
 }
 
 
+function addMarker(posX,posY){
+    map.removeInteraction(typeInteraction);
+
+    var iconFeature = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([posX,posY])),
+        name: 'Marker',
+        population: 4000,
+        rainfall: 500
+    });
+
+    var iconStyle = new ol.style.Style({
+        image: new ol.style.Icon( ({
+            anchor: [0.5, 46],
+            anchorXUnits: 'fraction',
+            anchorYUnits: 'pixels',
+            src: '../image/marker.png'
+        }))
+    });
+
+    iconFeature.setStyle(iconStyle);
+    sourceDraw.addFeature(iconFeature);
+}
+
+
+
+
+
 //выбор контроллера рисования на панели управления
 document.getElementById('controlToggle').onchange = function(){
     map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
@@ -118,5 +162,4 @@ document.getElementById('selectToggle').onchange = function(){
     map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
     selectInteraction();
 };
-
 
