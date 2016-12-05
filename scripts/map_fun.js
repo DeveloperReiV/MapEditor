@@ -3,7 +3,7 @@ var geoJSON = new ol.format.GeoJSON();  //экземпл€р класса geoJSON
 var typeDraw;                           //тип графики выбранный на панели инструментов
 var typeInteraction = null;             //ссылка на выбранный тип взаимодействи€
 
-var sourceDraw = new ol.source.Vector({wrapX: false}); //источник графики дл€ векторного сло€
+var sourceDraw = new ol.source.Vector({wrapX: false, format: geoJSON}); //источник графики дл€ векторного сло€
 
 //»нициализаци€ карты при загрузке страницы
 function initMap()
@@ -18,7 +18,8 @@ function initMap()
     drawLayer = new ol.layer.Vector({     //создаем векторный слой данных
         source: sourceDraw,               //берем данные из источника графики
         name:'Draw',
-        format: geoJSON                   //храним данные в формате JSON
+        format: geoJSON,                   //храним данные в формате JSON
+        wrapX: false
     });
 
     //вид карты (зум и координаты центра)
@@ -51,42 +52,6 @@ function initMap()
     document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигаци€"
 }
 
-//‘ункци€ рисовани€
-function drawInteraction()
-{
-    if (typeDraw !== 'None') {
-        //тип взаимодействи€ "создание графических данных"
-        typeInteraction = new ol.interaction.Draw({
-            source: sourceDraw,                     //рисовать здесь
-            type: typeDraw                          //данные данного типа
-        });
-        map.addInteraction(typeInteraction);        //добавл€ем данные к карте
-    }
-}
-
-//Ѕыбор элемента на карте
-function selectInteraction(){
-    //тип взаимодействи€ "выбор по клику мыши"
-    typeInteraction = new ol.interaction.Select({
-        condition: ol.events.condition.click
-    });
-
-    if (typeInteraction !== null) {
-        map.addInteraction(typeInteraction);     //выбор объекта (реализуем взаимодействие)
-    }
-}
-
-//выбор контроллера рисовани€ на панели управлени€
-document.getElementById('controlToggle').onchange = function(){
-    map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
-    drawInteraction();
-};
-
-//¬ыбор котроллера "выбрать"
-document.getElementById('selectToggle').onchange = function(){
-    map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
-    selectInteraction();
-};
 
 //выбор контроллера на понели рисовани€
 function toggleControl(element) {
@@ -116,3 +81,42 @@ function showJSON(){
         sourceDraw.addFeatures(geoJSON.readFeatures(dataJSON)); //считываем данные из JSON в источник графики дл€ векторного сло€
     }
 }
+
+//‘ункци€ рисовани€
+function drawInteraction(){
+    if (typeDraw !== 'None') {
+        //тип взаимодействи€ "создание графических данных"
+        typeInteraction = new ol.interaction.Draw({
+            source: sourceDraw,                     //рисовать здесь
+            type: typeDraw                          //данные данного типа
+        });
+        map.addInteraction(typeInteraction);        //добавл€ем данные к карте
+    }
+}
+
+//Ѕыбор элемента на карте
+function selectInteraction(){
+    //тип взаимодействи€ "выбор по клику мыши"
+    typeInteraction = new ol.interaction.Select({
+        condition: ol.events.condition.click
+    });
+
+    if (typeInteraction !== null) {
+        map.addInteraction(typeInteraction);     //выбор объекта (реализуем взаимодействие)
+    }
+}
+
+
+//выбор контроллера рисовани€ на панели управлени€
+document.getElementById('controlToggle').onchange = function(){
+    map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
+    drawInteraction();
+};
+
+//¬ыбор котроллера "выбрать"
+document.getElementById('selectToggle').onchange = function(){
+    map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
+    selectInteraction();
+};
+
+

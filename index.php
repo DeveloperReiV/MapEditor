@@ -56,8 +56,14 @@ if($_POST['item']) {
                     <input type="radio" name="type" value="Select" id="selectToggle""/>
                     <label for="selectToggle">Выбрать</label>
                 </li>
-                <input type="submit" value="Записать JSON" onclick="sendJSON()">
-                <input type="submit" value="Считать JSON" onclick="showJSON()">
+
+
+                <br/>
+
+                <div class="btn-group">
+                    <input type="submit" value="Записать JSON" class="btn btn-default btn-sm" onclick="sendJSON()">
+                    <input type="submit" value="Считать JSON" class="btn btn-default btn-sm" onclick="showJSON()">
+                <div>
 
             </div>
         </div>
