@@ -37,8 +37,6 @@ if($_POST['item']) {
 
 <body onload="initMap()" class="container-fluid">
 
-
-
 <div align="center" class="row">
     <div class="col-xs-12">
         <div class="panel panel-primary">
@@ -80,8 +78,8 @@ if($_POST['item']) {
     </div>
 </div>
 
-<div class="row">
-    <div id="map" class="map" style="width:100%; height:70%"><div id="popup"></div></div>
+<div class="row" style="width:100%; height:70%">
+    <div id="map" class="map"><div id="popup"></div></div>
     <div id="pos"></div>
 </div>
 

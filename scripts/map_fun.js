@@ -177,9 +177,10 @@ function getMarkerFromPoints(){
     for(var i=0;i<arr_point.length;i++){
         var x=arr_point[i]['geometry']['coordinates'][0];
         var y=arr_point[i]['geometry']['coordinates'][1];
+        var name=arr_point[i]['properties']['name'];
         var coor=ol.proj.transform([x,y], 'EPSG:3857', 'EPSG:4326');
 
-        addMarker(coor[0],coor[1]);
+        addMarker(coor[0],coor[1], name);
     }
 }
 
