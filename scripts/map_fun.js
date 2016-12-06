@@ -17,9 +17,10 @@ function initMap()
 
     //событие клик по карте
     map.on('click', function(evt) {
+        $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
 
-        if(document.getElementById('noneToggle').checked) {
-            showPopupMarker(evt);  //отобрразить всплывающее окно если кликнули по маркеру
+        if(document.getElementById('noneToggle').checked || document.getElementById('selectToggle').checked) {
+            showPopupMarker(evt);                    //отобрразить всплывающее окно если кликнули по маркеру
         }
 
         //если выбран четбокс "Маркер" (получаем координаты, добавляем маркер)
@@ -93,11 +94,6 @@ function addControlToMap(){
     map.addControl(controlScaleLine);
 }
 
-//выбор контроллера на понели рисования
-function toggleControl(element) {
-    typeDraw=element.value;
-}
-
 //получает параметры слоя полигонов и маркеров в JSON формате и отправляет обработчику
 function sendJSON(){
     var json = geoJSON.writeFeatures(sourceDraw.getFeatures()); //считываем данные из источника графики в вормат JSON
@@ -127,14 +123,12 @@ function showJSON(){
 
 //Функция рисования
 function drawInteraction(){
-    if (typeDraw !== 'None') {
-        //тип взаимодействия "создание графических данных"
-        typeInteraction = new ol.interaction.Draw({
-            source: sourceDraw,                     //рисовать здесь
-            type: typeDraw                          //данные данного типа
-        });
-        map.addInteraction(typeInteraction);        //добавляем данные к карте
-    }
+    //тип взаимодействия "создание графических данных"
+    typeInteraction = new ol.interaction.Draw({
+        source: sourceDraw,                     //рисовать здесь
+        type: "Polygon"                         //данные данного типа
+    });
+    map.addInteraction(typeInteraction);        //добавляем данные к карте
 }
 
 //Быбор элемента на карте
@@ -220,7 +214,7 @@ function createPopup(){
 }
 
 //выбор контроллера рисования на панели управления
-document.getElementById('controlToggle').onchange = function(){
+document.getElementById('polygonToggle').onchange = function(){
     map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
     drawInteraction();
 };
@@ -229,5 +223,10 @@ document.getElementById('controlToggle').onchange = function(){
 document.getElementById('selectToggle').onchange = function(){
     map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
     selectInteraction();
+};
+
+//Выбор любого контроллера
+document.getElementById('controlToggle').onchange = function(){
+    $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
 };
 
