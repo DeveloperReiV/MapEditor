@@ -9,7 +9,7 @@ if(file_exists($file)) {
 
     $arr=$strJSON->get_geometry($fileJSON);     //получаем массивы с полигонами и точками
     $arr_polygon=$arr[0];                       //полигоны
-    $arr_point=$arr[1];                         //массив точек
+    $arr_point=$arr[1];                         //точки
 }
 
 if($_POST['item']) {
@@ -85,7 +85,7 @@ if($_POST['item']) {
 </div>
 
 <div class="row">
-    <div id="map" class="map" style="width:100%; height:70%"></div>
+    <div id="map" class="map" style="width:100%; height:70%"><div id="popup"></div></div>
     <div id="pos"></div>
 </div>
 

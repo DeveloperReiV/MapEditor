@@ -1,15 +1,51 @@
-var map, OSMLayer, mapView, drawLayer;  //слои карты
-var geoJSON = new ol.format.GeoJSON();  //экземпляр класса geoJSON
-var typeDraw;                           //тип графики выбранный на панели инструментов
-var typeInteraction = null;             //ссылка на выбранный тип взаимодействия
-
+var map, OSMLayer, mapView, drawLayer;                                  //слои карты
+var geoJSON = new ol.format.GeoJSON();                                  //экземпляр класса geoJSON
+var typeDraw;                                                           //тип графики выбранный на панели инструментов
+var typeInteraction = null;                                             //ссылка на выбранный тип взаимодействия
 var sourceDraw = new ol.source.Vector({wrapX: false, format: geoJSON}); //источник графики для векторного слоя
-
-var posX, posY;                         //координаты щелчка мыши
+var posX, posY;                                                         //координаты щелчка мыши
+var popup;                                                              //всплывающие окно объект
+var elementPopup=document.getElementById('popup');                      //div контейнер всплывающее окно
 
 //Инициализация карты при загрузке страницы
 function initMap()
 {
+    createMAP();                                            //создаем карту
+    addControlToMap();                                      //добавляем контроллеры управления
+    createPopup();                                          //зоздаем всплывающие окно для вывода информации
+    document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
+
+    //событие клик по карте
+    map.on('click', function(evt) {
+
+        if(document.getElementById('noneToggle').checked) {
+            showPopupMarker(evt);  //отобрразить всплывающее окно если кликнули по маркеру
+        }
+
+        //если выбран четбокс "Маркер" (получаем координаты, добавляем маркер)
+        if(document.getElementById('markerToggle').checked){
+            var hdms = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
+            posX=hdms[0];   //долгота
+            posY=hdms[1];   //широта
+            addMarker(posX,posY);   //добавляем маркер
+        }
+    });
+
+
+    /*map.on('pointermove', function(e) {
+        if (e.dragging) {
+            $(elementPopup).popover('destroy');
+            return;
+        }
+        var pixel = map.getEventPixel(e.originalEvent);
+        var hit = map.hasFeatureAtPixel(pixel);
+        map.getTarget().style.cursor = hit ? 'pointer' : '';
+    });*/
+}
+
+//создание карты со слоем OSM и графическим слоем
+function createMAP(){
+
     //слой карты OpenStreetMap
     OSMLayer = new ol.layer.Tile({  //создание плитки карты
         source:new ol.source.OSM(), //данные карты беруться из OpenStreetMap
@@ -37,13 +73,17 @@ function initMap()
         layers:[OSMLayer,drawLayer],
         view: mapView
     });
+}
 
+//добавить контроллеры к карте
+function addControlToMap(){
     //Контроллер положения мыши на карте
     var controlMousePosition = new ol.control.MousePosition({
-        //coordinateFormat: ol.coordinate.toStringHDMS,  //формат вывода данных (4 знака после запятой)
+        coordinateFormat: ol.coordinate.toStringHDMS,  //формат вывода данных (4 знака после запятой)
         projection: 'EPSG:4326',                            //система координат
         className: 'posControlMousePosition'                //css класс
     });
+
     var controlFullScreen = new ol.control.FullScreen();    //контроллер отображения карты на весь экран
     var controlScaleLine = new ol.control.ScaleLine();      //контроллер отображения масштаба
 
@@ -51,21 +91,7 @@ function initMap()
     map.addControl(controlMousePosition);
     map.addControl(controlFullScreen);
     map.addControl(controlScaleLine);
-
-    document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
-
-    //событие клик по карте (получаем координаты)
-    map.on('click', function(evt) {
-        var hdms = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
-        posX=hdms[0];   //долгота
-        posY=hdms[1];   //широта
-
-        if(document.getElementById('markerToggle').checked){    //если выбран четбокс "Маркер"
-            addMarker(posX,posY);   //добавляем маркер
-        }
-    });
 }
-
 
 //выбор контроллера на понели рисования
 function toggleControl(element) {
@@ -158,6 +184,39 @@ function getMarkerFromPoints(){
 
         addMarker(coor[0],coor[1]);
     }
+}
+
+//отобрразить всплывающее окно если кликнули по маркеру
+function showPopupMarker(evt){
+    var feature = map.forEachFeatureAtPixel(evt.pixel,  //определяем был ли клик по маркеру по разнице цветов пикселей слоев
+        function(feature){
+            return feature;
+        });
+
+    //если клик был по маркеру
+    if (feature){
+        var coordinates = feature.getGeometry().getCoordinates();   //получаем координаты
+        popup.setPosition(coordinates);                             //установка положения для всплывающего окна
+        $(elementPopup).popover({                                   //открываем окно
+            'placement': 'top',                                     //Расположение окна
+            'html': true,
+            'content': feature.get('name')                          //содержимое
+        });
+        $(elementPopup).popover('show');
+    } else {
+        $(elementPopup).popover('destroy');
+    }
+}
+
+//создаем всплывающие окно для вывода информации
+function createPopup(){
+    popup = new ol.Overlay({
+        element: elementPopup,
+        positioning: 'bottom-center',
+        stopEvent: false,
+        offset: [0, -50]
+    });
+    map.addOverlay(popup);
 }
 
 //выбор контроллера рисования на панели управления
