@@ -54,17 +54,16 @@ function initMap()
 
     document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
 
-        //событие клик по карте (получаем координаты)
-        map.on('click', function(evt) {
-            var hdms = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
-            posX=hdms[0];   //долгота
-            posY=hdms[1];   //широта
+    //событие клик по карте (получаем координаты)
+    map.on('click', function(evt) {
+        var hdms = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
+        posX=hdms[0];   //долгота
+        posY=hdms[1];   //широта
 
-            if(document.getElementById('markerToggle').checked){
-                addMarker(posX,posY);
-            }
-        });
-
+        if(document.getElementById('markerToggle').checked){
+            addMarker(posX,posY);
+        }
+    });
 }
 
 
@@ -73,7 +72,7 @@ function toggleControl(element) {
     typeDraw=element.value;
 }
 
-//получает параметры слоя полигонов в JSON формате и отправляет обработчику
+//получает параметры слоя полигонов и маркеров в JSON формате и отправляет обработчику
 function sendJSON(){
     var json = geoJSON.writeFeatures(sourceDraw.getFeatures()); //считываем данные из источника графики в вормат JSON
 
@@ -90,10 +89,13 @@ function sendJSON(){
     }
 }
 
-//отображает полигоны на основе данных из JSON
+//отображает полигоны и маркеры на основе данных из JSON
 function showJSON(){
-    if(dataJSON) {
-        sourceDraw.addFeatures(geoJSON.readFeatures(dataJSON)); //считываем данные из JSON в источник графики для векторного слоя
+    if(arr_polygon) {
+        sourceDraw.addFeatures(geoJSON.readFeatures(arr_polygon)); //считываем данные из JSON в источник графики для векторного слоя
+    }
+    if(arr_point){
+        getMarkerFromPoints();
     }
 }
 
@@ -121,7 +123,7 @@ function selectInteraction(){
     }
 }
 
-
+//Добавляет маркер на карту по координатам
 function addMarker(posX,posY){
     map.removeInteraction(typeInteraction);                             //очищаем текущее взаимодействие
 
@@ -143,6 +145,19 @@ function addMarker(posX,posY){
 
     iconFeature.setStyle(iconStyle);        //задаем стиль объекту iconFeature
     sourceDraw.addFeature(iconFeature);     //добавляем объект в источник графики для векторного слоя
+}
+
+//получаем маркеры из JSON строки с координатами точек и выводим на карту
+function getMarkerFromPoints(){
+    arr_point=JSON.parse(arr_point);    //преобразуем JSON в массив объектов
+
+    for(var i=0;i<arr_point.length;i++){
+        var x=arr_point[i]['geometry']['coordinates'][0];
+        var y=arr_point[i]['geometry']['coordinates'][1];
+        var coor=ol.proj.transform([x,y], 'EPSG:3857', 'EPSG:4326');
+
+        addMarker(coor[0],coor[1]);
+    }
 }
 
 //выбор контроллера рисования на панели управления

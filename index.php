@@ -1,18 +1,15 @@
 <?php
 mb_internal_encoding("UTF-8");
 require_once('strJSON.php');
-
 $file="drawing.json";
-
 $strJSON=new strJSON();
 
 if(file_exists($file)) {
     $fileJSON = file_get_contents($file);  //считываем файл
 
-    $dataJSON=$strJSON->get_array_polygon($fileJSON);
-
-    $arr_point=$strJSON->array_point;       //массив точек
-
+    $arr=$strJSON->get_geometry($fileJSON);     //получаем массивы с полигонами и точками
+    $arr_polygon=$arr[0];                       //полигоны
+    $arr_point=$arr[1];                         //массив точек
 }
 
 if($_POST['item']) {
@@ -33,7 +30,8 @@ if($_POST['item']) {
 </head>
 
 <script type="text/javascript">
-    var dataJSON='<?php echo $dataJSON;?>'; //строока JSON из файла записывается в переменную JavaScript
+    var arr_polygon = '<?php echo $arr_polygon;?>'; //запись массивов
+    var arr_point = '<?php echo $arr_point;?>';     //в переменную JavaScript
 </script>
 
 

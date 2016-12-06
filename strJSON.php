@@ -2,14 +2,15 @@
 
 class strJSON
 {
-    public $array_point = null;     //массив точек
+    //public $array_point = null;     //массив точек
     //public  $array_polygon = null;  //массив полигонов
 
 
     //получает строку формата JSON
-    //после выполнения оставляет в исходной строке только массив полигонов
-    //массив точек перезаписываеться в другой массив и удаляеться из исходного
-    function get_array_polygon($json)
+    //возвращает две JSON строки
+    //первая хранит JSON строку с полигонами и их свойства
+    //вторая хранить JSON строку с точками и их свойства
+    function get_geometry($json)
     {
         $json=json_decode($json,true);
 
@@ -21,6 +22,6 @@ class strJSON
                 unset($json['features'][$key]);
             }
         }
-        return json_encode($json);
+        return [json_encode($json),json_encode($array_point)];
     }
 }
