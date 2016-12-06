@@ -1,10 +1,18 @@
 <?php
+mb_internal_encoding("UTF-8");
+require_once('strJSON.php');
+
 $file="drawing.json";
 
+$strJSON=new strJSON();
+
 if(file_exists($file)) {
-    $dataJSON = file_get_contents($file);  //считываем файл
-    $arr=json_decode($dataJSON);
-    //print_r($arr);
+    $fileJSON = file_get_contents($file);  //считываем файл
+
+    $dataJSON=$strJSON->get_array_polygon($fileJSON);
+
+    $arr_point=$strJSON->array_point;       //массив точек
+
 }
 
 if($_POST['item']) {

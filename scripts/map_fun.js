@@ -54,8 +54,6 @@ function initMap()
 
     document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
 
-
-
         //событие клик по карте (получаем координаты)
         map.on('click', function(evt) {
             var hdms = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
@@ -125,17 +123,17 @@ function selectInteraction(){
 
 
 function addMarker(posX,posY){
-    map.removeInteraction(typeInteraction);
+    map.removeInteraction(typeInteraction);                             //очищаем текущее взаимодействие
 
-    var iconFeature = new ol.Feature({
-        geometry: new ol.geom.Point(ol.proj.fromLonLat([posX,posY])),
+    var iconFeature = new ol.Feature({                                  //создаем объект для векторного слоя
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([posX,posY])),   //тип объекта "точка"
         name: 'Marker',
         population: 4000,
         rainfall: 500
     });
 
-    var iconStyle = new ol.style.Style({
-        image: new ol.style.Icon( ({
+    var iconStyle = new ol.style.Style({    //создаем стиль
+        image: new ol.style.Icon( ({        //создание иконки с параметрами
             anchor: [0.5, 46],
             anchorXUnits: 'fraction',
             anchorYUnits: 'pixels',
@@ -143,13 +141,9 @@ function addMarker(posX,posY){
         }))
     });
 
-    iconFeature.setStyle(iconStyle);
-    sourceDraw.addFeature(iconFeature);
+    iconFeature.setStyle(iconStyle);        //задаем стиль объекту iconFeature
+    sourceDraw.addFeature(iconFeature);     //добавляем объект в источник графики для векторного слоя
 }
-
-
-
-
 
 //выбор контроллера рисования на панели управления
 document.getElementById('controlToggle').onchange = function(){
