@@ -1,74 +1,73 @@
-var map, OSMLayer, mapView, drawLayer;                                  //слои карты
-var geoJSON = new ol.format.GeoJSON();                                  //экземпляр класса geoJSON
-var typeDraw;                                                           //тип графики выбранный на панели инструментов
-var typeInteraction = null;                                             //ссылка на выбранный тип взаимодействия
-var sourceDraw = new ol.source.Vector({wrapX: false, format: geoJSON}); //источник графики для векторного слоя
-var posX, posY;                                                         //координаты щелчка мыши
-var popup;                                                              //всплывающие окно объект
-var elementPopup=document.getElementById('popup');                      //div контейнер всплывающее окно
+var map, OSMLayer, mapView, drawLayer;                                  //СЃР»РѕРё РєР°СЂС‚С‹
+var geoJSON = new ol.format.GeoJSON();                                  //СЌРєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° geoJSON
+var typeInteraction = null;                                             //СЃСЃС‹Р»РєР° РЅР° РІС‹Р±СЂР°РЅРЅС‹Р№ С‚РёРї РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёСЏ
+var sourceDraw = new ol.source.Vector({wrapX: false, format: geoJSON}); //РёСЃС‚РѕС‡РЅРёРє РіСЂР°С„РёРєРё РґР»СЏ РІРµРєС‚РѕСЂРЅРѕРіРѕ СЃР»РѕСЏ
+var posX, posY;                                                         //РєРѕРѕСЂРґРёРЅР°С‚С‹ С‰РµР»С‡РєР° РјС‹С€Рё
+var popup;                                                              //РІСЃРїР»С‹РІР°СЋС‰РёРµ РѕРєРЅРѕ РѕР±СЉРµРєС‚
+var elementPopup=document.getElementById('popup');                      //div РєРѕРЅС‚РµР№РЅРµСЂ РІСЃРїР»С‹РІР°СЋС‰РµРµ РѕРєРЅРѕ
 
-//Инициализация карты при загрузке страницы
+//РЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєР°СЂС‚С‹ РїСЂРё Р·Р°РіСЂСѓР·РєРµ СЃС‚СЂР°РЅРёС†С‹
 function initMap()
 {
-    createMAP();                                            //создаем карту
-    addControlToMap();                                      //добавляем контроллеры управления
-    createPopup();                                          //зоздаем всплывающие окно для вывода информации
-    document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
+    createMAP();                                            //СЃРѕР·РґР°РµРј РєР°СЂС‚Сѓ
+    addControlToMap();                                      //РґРѕР±Р°РІР»СЏРµРј РєРѕРЅС‚СЂРѕР»Р»РµСЂС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
+    createPopup();                                          //Р·РѕР·РґР°РµРј РІСЃРїР»С‹РІР°СЋС‰РёРµ РѕРєРЅРѕ РґР»СЏ РІС‹РІРѕРґР° РёРЅС„РѕСЂРјР°С†РёРё
+    document.getElementById('noneToggle').checked = true;   //РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РІС‹Р±СЂР°РЅ РёРЅСЃС‚СЂСѓРјРµРЅС‚ "РЅР°РІРёРіР°С†РёСЏ"
 
-    //событие клик по карте
+    //СЃРѕР±С‹С‚РёРµ РєР»РёРє РїРѕ РєР°СЂС‚Рµ
     map.on('click', function(evt) {
-        $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
+        $(elementPopup).popover('destroy');         //СЃРєСЂС‹С‚СЊ РІС‹РїР»С‹РІР°СЋС‰РµРµ РѕРєРЅРѕ РЅР°Рґ РјР°СЂРєРµСЂРѕРј
 
         if(document.getElementById('noneToggle').checked || document.getElementById('selectToggle').checked) {
-            showPopupMarker(evt);                    //отобрразить всплывающее окно если кликнули по маркеру
+            showPopupMarker(evt);                    //РѕС‚РѕР±СЂСЂР°Р·РёС‚СЊ РІСЃРїР»С‹РІР°СЋС‰РµРµ РѕРєРЅРѕ РµСЃР»Рё РєР»РёРєРЅСѓР»Рё РїРѕ РјР°СЂРєРµСЂСѓ
         }
 
-        //если выбран четбокс "Маркер" (получаем координаты, добавляем маркер)
+        //РµСЃР»Рё РІС‹Р±СЂР°РЅ С‡РµС‚Р±РѕРєСЃ "РњР°СЂРєРµСЂ" (РїРѕР»СѓС‡Р°РµРј РєРѕРѕСЂРґРёРЅР°С‚С‹, РґРѕР±Р°РІР»СЏРµРј РјР°СЂРєРµСЂ)
         if(document.getElementById('markerToggle').checked){
             var hdms = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
-            posX=hdms[0];   //долгота
-            posY=hdms[1];   //широта
-            addMarker(posX,posY);   //добавляем маркер
+            posX=hdms[0];   //РґРѕР»РіРѕС‚Р°
+            posY=hdms[1];   //С€РёСЂРѕС‚Р°
+            addMarker(posX,posY);   //РґРѕР±Р°РІР»СЏРµРј РјР°СЂРєРµСЂ
         }
     });
 
 
     /*map.on('pointermove', function(e) {
-        if (e.dragging) {
-            $(elementPopup).popover('destroy');
-            return;
-        }
-        var pixel = map.getEventPixel(e.originalEvent);
-        var hit = map.hasFeatureAtPixel(pixel);
-        map.getTarget().style.cursor = hit ? 'pointer' : '';
-    });*/
+     if (e.dragging) {
+     $(elementPopup).popover('destroy');
+     return;
+     }
+     var pixel = map.getEventPixel(e.originalEvent);
+     var hit = map.hasFeatureAtPixel(pixel);
+     map.getTarget().style.cursor = hit ? 'pointer' : '';
+     });*/
 }
 
-//создание карты со слоем OSM и графическим слоем
+//СЃРѕР·РґР°РЅРёРµ РєР°СЂС‚С‹ СЃРѕ СЃР»РѕРµРј OSM Рё РіСЂР°С„РёС‡РµСЃРєРёРј СЃР»РѕРµРј
 function createMAP(){
 
-    //слой карты OpenStreetMap
-    OSMLayer = new ol.layer.Tile({  //создание плитки карты
-        source:new ol.source.OSM(), //данные карты беруться из OpenStreetMap
+    //СЃР»РѕР№ РєР°СЂС‚С‹ OpenStreetMap
+    OSMLayer = new ol.layer.Tile({  //СЃРѕР·РґР°РЅРёРµ РїР»РёС‚РєРё РєР°СЂС‚С‹
+        source:new ol.source.OSM(), //РґР°РЅРЅС‹Рµ РєР°СЂС‚С‹ Р±РµСЂСѓС‚СЊСЃСЏ РёР· OpenStreetMap
         name: 'OpenStreetMap'
     });
 
-    //слой графических данных
-    drawLayer = new ol.layer.Vector({     //создаем векторный слой данных
-        source: sourceDraw,               //берем данные из источника графики
+    //СЃР»РѕР№ РіСЂР°С„РёС‡РµСЃРєРёС… РґР°РЅРЅС‹С…
+    drawLayer = new ol.layer.Vector({     //СЃРѕР·РґР°РµРј РІРµРєС‚РѕСЂРЅС‹Р№ СЃР»РѕР№ РґР°РЅРЅС‹С…
+        source: sourceDraw,               //Р±РµСЂРµРј РґР°РЅРЅС‹Рµ РёР· РёСЃС‚РѕС‡РЅРёРєР° РіСЂР°С„РёРєРё
         name:'Draw',
-        format: geoJSON,                   //храним данные в формате JSON
+        format: geoJSON,                   //С…СЂР°РЅРёРј РґР°РЅРЅС‹Рµ РІ С„РѕСЂРјР°С‚Рµ JSON
         projection: 'EPSG:4326',
         wrapX: false
     });
 
-    //вид карты (зум и координаты центра)
+    //РІРёРґ РєР°СЂС‚С‹ (Р·СѓРј Рё РєРѕРѕСЂРґРёРЅР°С‚С‹ С†РµРЅС‚СЂР°)
     mapView = new ol.View({
-        center: ol.proj.fromLonLat([36.2754200,54.5293000]), //координаты Калуги
+        center: ol.proj.fromLonLat([36.2754200,54.5293000]), //РєРѕРѕСЂРґРёРЅР°С‚С‹ РљР°Р»СѓРіРё
         zoom: 11
     });
 
-    //Контейнер карты
+    //РљРѕРЅС‚РµР№РЅРµСЂ РєР°СЂС‚С‹
     map = new ol.Map({
         target: 'map',
         layers:[OSMLayer,drawLayer],
@@ -76,29 +75,29 @@ function createMAP(){
     });
 }
 
-//добавить контроллеры к карте
+//РґРѕР±Р°РІРёС‚СЊ РєРѕРЅС‚СЂРѕР»Р»РµСЂС‹ Рє РєР°СЂС‚Рµ
 function addControlToMap(){
-    //Контроллер положения мыши на карте
+    //РљРѕРЅС‚СЂРѕР»Р»РµСЂ РїРѕР»РѕР¶РµРЅРёСЏ РјС‹С€Рё РЅР° РєР°СЂС‚Рµ
     var controlMousePosition = new ol.control.MousePosition({
-        coordinateFormat: ol.coordinate.toStringHDMS,  //формат вывода данных (4 знака после запятой)
-        projection: 'EPSG:4326',                            //система координат
-        className: 'posControlMousePosition'                //css класс
+        coordinateFormat: ol.coordinate.toStringHDMS,  //С„РѕСЂРјР°С‚ РІС‹РІРѕРґР° РґР°РЅРЅС‹С… (4 Р·РЅР°РєР° РїРѕСЃР»Рµ Р·Р°РїСЏС‚РѕР№)
+        projection: 'EPSG:4326',                            //СЃРёСЃС‚РµРјР° РєРѕРѕСЂРґРёРЅР°С‚
+        className: 'posControlMousePosition'                //css РєР»Р°СЃСЃ
     });
 
-    var controlFullScreen = new ol.control.FullScreen();    //контроллер отображения карты на весь экран
-    var controlScaleLine = new ol.control.ScaleLine();      //контроллер отображения масштаба
+    var controlFullScreen = new ol.control.FullScreen();    //РєРѕРЅС‚СЂРѕР»Р»РµСЂ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РєР°СЂС‚С‹ РЅР° РІРµСЃСЊ СЌРєСЂР°РЅ
+    var controlScaleLine = new ol.control.ScaleLine();      //РєРѕРЅС‚СЂРѕР»Р»РµСЂ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РјР°СЃС€С‚Р°Р±Р°
 
-    //добавляем контроллеры
+    //РґРѕР±Р°РІР»СЏРµРј РєРѕРЅС‚СЂРѕР»Р»РµСЂС‹
     map.addControl(controlMousePosition);
     map.addControl(controlFullScreen);
     map.addControl(controlScaleLine);
 }
 
-//получает параметры слоя полигонов и маркеров в JSON формате и отправляет обработчику
+//РїРѕР»СѓС‡Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ СЃР»РѕСЏ РїРѕР»РёРіРѕРЅРѕРІ Рё РјР°СЂРєРµСЂРѕРІ РІ JSON С„РѕСЂРјР°С‚Рµ Рё РѕС‚РїСЂР°РІР»СЏРµС‚ РѕР±СЂР°Р±РѕС‚С‡РёРєСѓ
 function sendJSON(){
-    var json = geoJSON.writeFeatures(sourceDraw.getFeatures()); //считываем данные из источника графики в вормат JSON
+    var json = geoJSON.writeFeatures(sourceDraw.getFeatures()); //СЃС‡РёС‚С‹РІР°РµРј РґР°РЅРЅС‹Рµ РёР· РёСЃС‚РѕС‡РЅРёРєР° РіСЂР°С„РёРєРё РІ РІРѕСЂРјР°С‚ JSON
 
-    //отправляем данные методом POST php обработчику в index.php
+    //РѕС‚РїСЂР°РІР»СЏРµРј РґР°РЅРЅС‹Рµ РјРµС‚РѕРґРѕРј POST php РѕР±СЂР°Р±РѕС‚С‡РёРєСѓ РІ index.php
     if(json) {
         $.ajax({
             type: 'POST',
@@ -111,51 +110,55 @@ function sendJSON(){
     }
 }
 
-//отображает полигоны и маркеры на основе данных из JSON
+//РѕС‚РѕР±СЂР°Р¶Р°РµС‚ РїРѕР»РёРіРѕРЅС‹ Рё РјР°СЂРєРµСЂС‹ РЅР° РѕСЃРЅРѕРІРµ РґР°РЅРЅС‹С… РёР· JSON
 function showJSON(){
     if(arr_polygon) {
-        sourceDraw.addFeatures(geoJSON.readFeatures(arr_polygon)); //считываем данные из JSON в источник графики для векторного слоя
+        sourceDraw.addFeatures(geoJSON.readFeatures(arr_polygon)); //СЃС‡РёС‚С‹РІР°РµРј РґР°РЅРЅС‹Рµ РёР· JSON РІ РёСЃС‚РѕС‡РЅРёРє РіСЂР°С„РёРєРё РґР»СЏ РІРµРєС‚РѕСЂРЅРѕРіРѕ СЃР»РѕСЏ
     }
     if(arr_point){
         getMarkerFromPoints();
     }
 }
 
-//Функция рисования
+//Р¤СѓРЅРєС†РёСЏ СЂРёСЃРѕРІР°РЅРёСЏ
 function drawInteraction(){
-    //тип взаимодействия "создание графических данных"
+    //С‚РёРї РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёСЏ "СЃРѕР·РґР°РЅРёРµ РіСЂР°С„РёС‡РµСЃРєРёС… РґР°РЅРЅС‹С…"
     typeInteraction = new ol.interaction.Draw({
-        source: sourceDraw,                     //рисовать здесь
-        type: "Polygon"                         //данные данного типа
+        source: sourceDraw,                     //СЂРёСЃРѕРІР°С‚СЊ Р·РґРµСЃСЊ
+        type: "Polygon"                         //РґР°РЅРЅС‹Рµ РґР°РЅРЅРѕРіРѕ С‚РёРїР°
     });
-    map.addInteraction(typeInteraction);        //добавляем данные к карте
+    map.addInteraction(typeInteraction);        //РґРѕР±Р°РІР»СЏРµРј РґР°РЅРЅС‹Рµ Рє РєР°СЂС‚Рµ
 }
 
-//Быбор элемента на карте
+//Р‘С‹Р±РѕСЂ СЌР»РµРјРµРЅС‚Р° РЅР° РєР°СЂС‚Рµ
 function selectInteraction(){
-    //тип взаимодействия "выбор по клику мыши"
+    //С‚РёРї РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёСЏ "РІС‹Р±РѕСЂ РїРѕ РєР»РёРєСѓ РјС‹С€Рё"
     typeInteraction = new ol.interaction.Select({
         condition: ol.events.condition.click
     });
 
     if (typeInteraction !== null) {
-        map.addInteraction(typeInteraction);     //выбор объекта (реализуем взаимодействие)
+        map.addInteraction(typeInteraction);     //РІС‹Р±РѕСЂ РѕР±СЉРµРєС‚Р° (СЂРµР°Р»РёР·СѓРµРј РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёРµ)
     }
 }
 
-//Добавляет маркер на карту по координатам
-function addMarker(posX,posY){
-    map.removeInteraction(typeInteraction);                             //очищаем текущее взаимодействие
+//Р”РѕР±Р°РІР»СЏРµС‚ РјР°СЂРєРµСЂ РЅР° РєР°СЂС‚Сѓ РїРѕ РєРѕРѕСЂРґРёРЅР°С‚Р°Рј
+function addMarker(posX,posY,name){
 
-    var iconFeature = new ol.Feature({                                  //создаем объект для векторного слоя
-        geometry: new ol.geom.Point(ol.proj.fromLonLat([posX,posY])),   //тип объекта "точка"
-        name: 'Marker',
+    if(name===undefined){
+        name="РњР°СЂРєРµСЂ";
+    }
+    map.removeInteraction(typeInteraction);                             //РѕС‡РёС‰Р°РµРј С‚РµРєСѓС‰РµРµ РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёРµ
+
+    var iconFeature = new ol.Feature({                                  //СЃРѕР·РґР°РµРј РѕР±СЉРµРєС‚ РґР»СЏ РІРµРєС‚РѕСЂРЅРѕРіРѕ СЃР»РѕСЏ
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([posX,posY])),   //С‚РёРї РѕР±СЉРµРєС‚Р° "С‚РѕС‡РєР°"
+        name: name,
         population: 4000,
         rainfall: 500
     });
 
-    var iconStyle = new ol.style.Style({    //создаем стиль
-        image: new ol.style.Icon( ({        //создание иконки с параметрами
+    var iconStyle = new ol.style.Style({    //СЃРѕР·РґР°РµРј СЃС‚РёР»СЊ
+        image: new ol.style.Icon( ({        //СЃРѕР·РґР°РЅРёРµ РёРєРѕРЅРєРё СЃ РїР°СЂР°РјРµС‚СЂР°РјРё
             anchor: [0.5, 46],
             anchorXUnits: 'fraction',
             anchorYUnits: 'pixels',
@@ -163,13 +166,13 @@ function addMarker(posX,posY){
         }))
     });
 
-    iconFeature.setStyle(iconStyle);        //задаем стиль объекту iconFeature
-    sourceDraw.addFeature(iconFeature);     //добавляем объект в источник графики для векторного слоя
+    iconFeature.setStyle(iconStyle);        //Р·Р°РґР°РµРј СЃС‚РёР»СЊ РѕР±СЉРµРєС‚Сѓ iconFeature
+    sourceDraw.addFeature(iconFeature);     //РґРѕР±Р°РІР»СЏРµРј РѕР±СЉРµРєС‚ РІ РёСЃС‚РѕС‡РЅРёРє РіСЂР°С„РёРєРё РґР»СЏ РІРµРєС‚РѕСЂРЅРѕРіРѕ СЃР»РѕСЏ
 }
 
-//получаем маркеры из JSON строки с координатами точек и выводим на карту
+//РїРѕР»СѓС‡Р°РµРј РјР°СЂРєРµСЂС‹ РёР· JSON СЃС‚СЂРѕРєРё СЃ РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё С‚РѕС‡РµРє Рё РІС‹РІРѕРґРёРј РЅР° РєР°СЂС‚Сѓ
 function getMarkerFromPoints(){
-    arr_point=JSON.parse(arr_point);    //преобразуем JSON в массив объектов
+    arr_point=JSON.parse(arr_point);    //РїСЂРµРѕР±СЂР°Р·СѓРµРј JSON РІ РјР°СЃСЃРёРІ РѕР±СЉРµРєС‚РѕРІ
 
     for(var i=0;i<arr_point.length;i++){
         var x=arr_point[i]['geometry']['coordinates'][0];
@@ -180,21 +183,21 @@ function getMarkerFromPoints(){
     }
 }
 
-//отобрразить всплывающее окно если кликнули по маркеру
+//РѕС‚РѕР±СЂСЂР°Р·РёС‚СЊ РІСЃРїР»С‹РІР°СЋС‰РµРµ РѕРєРЅРѕ РµСЃР»Рё РєР»РёРєРЅСѓР»Рё РїРѕ РјР°СЂРєРµСЂСѓ
 function showPopupMarker(evt){
-    var feature = map.forEachFeatureAtPixel(evt.pixel,  //определяем был ли клик по маркеру по разнице цветов пикселей слоев
+    var feature = map.forEachFeatureAtPixel(evt.pixel,  //РѕРїСЂРµРґРµР»СЏРµРј Р±С‹Р» Р»Рё РєР»РёРє РїРѕ РјР°СЂРєРµСЂСѓ РїРѕ СЂР°Р·РЅРёС†Рµ С†РІРµС‚РѕРІ РїРёРєСЃРµР»РµР№ СЃР»РѕРµРІ
         function(feature){
             return feature;
         });
 
-    //если клик был по маркеру
+    //РµСЃР»Рё РєР»РёРє Р±С‹Р» РїРѕ РјР°СЂРєРµСЂСѓ
     if (feature){
-        var coordinates = feature.getGeometry().getCoordinates();   //получаем координаты
-        popup.setPosition(coordinates);                             //установка положения для всплывающего окна
-        $(elementPopup).popover({                                   //открываем окно
-            'placement': 'top',                                     //Расположение окна
+        var coordinates = feature.getGeometry().getCoordinates();   //РїРѕР»СѓС‡Р°РµРј РєРѕРѕСЂРґРёРЅР°С‚С‹
+        popup.setPosition(coordinates);                             //СѓСЃС‚Р°РЅРѕРІРєР° РїРѕР»РѕР¶РµРЅРёСЏ РґР»СЏ РІСЃРїР»С‹РІР°СЋС‰РµРіРѕ РѕРєРЅР°
+        $(elementPopup).popover({                                   //РѕС‚РєСЂС‹РІР°РµРј РѕРєРЅРѕ
+            'placement': 'top',                                     //Р Р°СЃРїРѕР»РѕР¶РµРЅРёРµ РѕРєРЅР°
             'html': true,
-            'content': feature.get('name')                          //содержимое
+            'content': feature.get('name')                          //СЃРѕРґРµСЂР¶РёРјРѕРµ
         });
         $(elementPopup).popover('show');
     } else {
@@ -202,7 +205,7 @@ function showPopupMarker(evt){
     }
 }
 
-//создаем всплывающие окно для вывода информации
+//СЃРѕР·РґР°РµРј РІСЃРїР»С‹РІР°СЋС‰РёРµ РѕРєРЅРѕ РґР»СЏ РІС‹РІРѕРґР° РёРЅС„РѕСЂРјР°С†РёРё
 function createPopup(){
     popup = new ol.Overlay({
         element: elementPopup,
@@ -213,20 +216,20 @@ function createPopup(){
     map.addOverlay(popup);
 }
 
-//выбор контроллера рисования на панели управления
+//РІС‹Р±РѕСЂ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° СЂРёСЃРѕРІР°РЅРёСЏ РЅР° РїР°РЅРµР»Рё СѓРїСЂР°РІР»РµРЅРёСЏ
 document.getElementById('polygonToggle').onchange = function(){
-    map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
+    map.removeInteraction(typeInteraction);         //РѕС‡РёС‰Р°РµРј С‚РµРєСѓС‰РµРµ РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёРµ
     drawInteraction();
 };
 
-//Выбор котроллера "выбрать"
+//Р’С‹Р±РѕСЂ РєРѕС‚СЂРѕР»Р»РµСЂР° "РІС‹Р±СЂР°С‚СЊ"
 document.getElementById('selectToggle').onchange = function(){
-    map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
+    map.removeInteraction(typeInteraction);         //РѕС‡РёС‰Р°РµРј С‚РµРєСѓС‰РµРµ РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёРµ
     selectInteraction();
 };
 
-//Выбор любого контроллера
+//Р’С‹Р±РѕСЂ Р»СЋР±РѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
 document.getElementById('controlToggle').onchange = function(){
-    $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
+    $(elementPopup).popover('destroy');         //СЃРєСЂС‹С‚СЊ РІС‹РїР»С‹РІР°СЋС‰РµРµ РѕРєРЅРѕ РЅР°Рґ РјР°СЂРєРµСЂРѕРј
 };
 

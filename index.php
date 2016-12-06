@@ -5,7 +5,7 @@ $file="drawing.json";
 $strJSON=new strJSON();
 
 if(file_exists($file)) {
-    $fileJSON = file_get_contents($file);  //считываем файл
+    $fileJSON = file_get_contents($file);       //считываем файл
 
     $arr=$strJSON->get_geometry($fileJSON);     //получаем массивы с полигонами и точками
     $arr_polygon=$arr[0];                       //полигоны
