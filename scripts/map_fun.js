@@ -60,8 +60,8 @@ function initMap()
         posX=hdms[0];   //долгота
         posY=hdms[1];   //широта
 
-        if(document.getElementById('markerToggle').checked){
-            addMarker(posX,posY);
+        if(document.getElementById('markerToggle').checked){    //если выбран четбокс "Маркер"
+            addMarker(posX,posY);   //добавляем маркер
         }
     });
 }

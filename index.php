@@ -67,7 +67,7 @@ if($_POST['item']) {
 
                 <li style="display: inline-block;">
                     <input type="radio" name="type" value="Marker" id="markerToggle""/>
-                    <label for="markerToggle">Добавить маркер</label>
+                    <label for="markerToggle">Маркер</label>
                 </li>
 
 
