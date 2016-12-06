@@ -37,37 +37,39 @@ if($_POST['item']) {
 
 <body onload="initMap()" class="container-fluid">
 
-<div align="center" class="row">
-    <div class="col-xs-12">
+<div class="row">
+    <div class="col-xs-2">
+
         <div class="panel panel-primary">
+
             <div class="panel-heading">
                 <h3 class="panel-title">Панель инструментов</h3>
             </div>
-            <div class="panel-body">
 
-            <ul id="controlToggle">
-                <li style="display: inline-block;">
+            <div class="panel-body">
+            <ul id="controlToggle" class="radio">
+                <li>
                     <input type="radio" name="type" value="None" id="noneToggle"/>
                     <label for="noneToggle">Навигация</label>
                 </li>
 
-                <li style="display: inline-block;">
+                <li>
                     <input type="radio" name="type" value="Polygon" id="polygonToggle"/>
-                    <label for="polygonToggle">Нарисовать полигон</label>
+                    <label for="polygonToggle">Полигон</label>
                 </li>
 
-                <li style="display: inline-block;">
+                <li>
                     <input type="radio" name="type" value="Select" id="selectToggle""/>
                     <label for="selectToggle">Выбрать</label>
                 </li>
 
-                <li style="display: inline-block;">
+                <li>
                     <input type="radio" name="type" value="Marker" id="markerToggle""/>
                     <label for="markerToggle">Маркер</label>
                 </li>
                 <br/>
 
-                <div class="btn-group">
+                <div class="btn-group-vertical">
                     <input type="submit" value="Записать JSON" class="btn btn-default btn-sm" onclick="sendJSON()">
                     <input type="submit" value="Считать JSON" class="btn btn-default btn-sm" onclick="showJSON()">
                 </div>
@@ -75,12 +77,14 @@ if($_POST['item']) {
 
             </div>
         </div>
-    </div>
-</div>
 
-<div class="row" style="width:100%; height:70%">
-    <div id="map" class="map"><div id="popup"></div></div>
-    <div id="pos"></div>
+    </div>
+
+    <div class="col-xs-10">
+        <div id="map" class="map"><div id="popup"></div></div>
+        <div id="pos"></div>
+    </div>
+
 </div>
 
 </body>
