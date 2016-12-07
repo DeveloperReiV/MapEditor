@@ -14,6 +14,7 @@ function initMap()
     createPopup();                                          //зоздаем всплывающие окно для вывода информации
     document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
 
+
     //Слушаем событие клик по карте
     map.on('click', function(evt) {
         $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
@@ -33,7 +34,7 @@ function initMap()
     });
 
 
-     map.on('pointermove', function(evt) {
+     /*map.on('pointermove', function(evt) {
          if (evt.dragging) {
             $(elementPopup).popover('destroy');
             return;
@@ -41,7 +42,7 @@ function initMap()
          var pixel = map.getEventPixel(evt.originalEvent);
          var hit = map.hasFeatureAtPixel(pixel);
          map.getTarget().style.cursor = hit ? 'pointer' : '';
-     });
+     });*/
 }
 
 //создание карты со слоем OSM и графическим слоем
@@ -50,13 +51,15 @@ function createMAP(){
     //слой карты OpenStreetMap
     OSMLayer = new ol.layer.Tile({  //создание плитки карты
         source:new ol.source.OSM(), //данные карты беруться из OpenStreetMap
-        name: 'OpenStreetMap'
+        name: 'OpenStreetMap',
+        title: 'OpenStreetMap'
     });
 
     //слой графических данных
     drawLayer = new ol.layer.Vector({     //создаем векторный слой данных
         source: sourceDraw,               //берем данные из источника графики
         name:'Draw',
+        title: 'Графика',
         format: geoJSON,                   //храним данные в формате JSON
         projection: 'EPSG:4326',
         wrapX: false
@@ -71,7 +74,11 @@ function createMAP(){
     //Контейнер карты
     map = new ol.Map({
         target: 'map',
-        layers:[OSMLayer,drawLayer],
+        layers:[new ol.layer.Group({
+            title:"Все слои",
+            layers:[OSMLayer,drawLayer]
+        })
+        ],
         view: mapView
     });
 }
@@ -87,11 +94,15 @@ function addControlToMap(){
 
     var controlFullScreen = new ol.control.FullScreen();    //контроллер отображения карты на весь экран
     var controlScaleLine = new ol.control.ScaleLine();      //контроллер отображения масштаба
+    var layerSwitcher = new ol.control.LayerSwitcher({      //контроллер управления отображением слоев
+        tipLabel: 'Légende'
+    });
 
     //добавляем контроллеры
     map.addControl(controlMousePosition);
     map.addControl(controlFullScreen);
     map.addControl(controlScaleLine);
+    map.addControl(layerSwitcher);
 }
 
 //получает параметры слоя полигонов и маркеров в JSON формате и отправляет обработчику

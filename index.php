@@ -31,6 +31,7 @@ if($_POST['item']) {
     <link rel="stylesheet" href="style/style.css" type="text/css">
     <link rel="stylesheet" href="style/bootstrap.css" type="text/css">
     <link rel="stylesheet" href="style/bootstrap-theme.css" type="text/css">
+    <link rel="stylesheet" href="style/ol3-layerswitcher.css" type="text/css">
 </head>
 
 <script type="text/javascript">
@@ -98,5 +99,6 @@ if($_POST['item']) {
 <script src="scripts/jquery.js" type="text/javascript" charset="utf-8"></script>
 <script src="scripts/bootstrap.js" type="text/javascript" charset="utf-8"></script>
 <script src="scripts/map_fun.js" type="text/javascript" charset="utf-8"></script>
+<script src="scripts/ol3-layerswitcher.js" type="text/javascript" charset="utf-8"></script>
 
 </html>
