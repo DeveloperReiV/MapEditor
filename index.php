@@ -10,6 +10,10 @@ if(file_exists($file)) {
     $arr=$strJSON->get_geometry($fileJSON);     //получаем массивы с полигонами и точками
     $arr_polygon=$arr[0];                       //полигоны
     $arr_point=$arr[1];                         //точки
+
+    $json11=json_decode($arr_polygon,true);
+    $json22=json_decode($arr_point,true);
+
 }
 
 if($_POST['item']) {
@@ -41,48 +45,43 @@ if($_POST['item']) {
     <div class="col-xs-2">
 
         <div class="panel panel-primary">
-
             <div class="panel-heading">
                 <h3 class="panel-title">Панель инструментов</h3>
             </div>
-
             <div class="panel-body">
-            <ul id="controlToggle" class="radio">
-                <li>
-                    <input type="radio" name="type" value="None" id="noneToggle"/>
-                    <label for="noneToggle">Навигация</label>
-                </li>
+                <ul id="controlToggle" class="radio">
+                    <li>
+                        <input type="radio" name="type" value="None" id="noneToggle"/>
+                        <label for="noneToggle">Навигация</label>
+                    </li>
 
-                <li>
-                    <input type="radio" name="type" value="Polygon" id="polygonToggle"/>
-                    <label for="polygonToggle">Полигон</label>
-                </li>
+                    <li>
+                        <input type="radio" name="type" value="Polygon" id="polygonToggle"/>
+                        <label for="polygonToggle">Полигон</label>
+                    </li>
 
-                <li>
-                    <input type="radio" name="type" value="Select" id="selectToggle""/>
-                    <label for="selectToggle">Выбрать</label>
-                </li>
+                    <li>
+                        <input type="radio" name="type" value="Select" id="selectToggle""/>
+                        <label for="selectToggle">Выбрать</label>
+                    </li>
 
-                <li>
-                    <input type="radio" name="type" value="Marker" id="markerToggle""/>
-                    <label for="markerToggle">Маркер</label>
-                </li>
-                <br/>
+                    <li>
+                        <input type="radio" name="type" value="Marker" id="markerToggle""/>
+                        <label for="markerToggle">Маркер</label>
+                    </li>
+                    <br/>
 
-                <div class="btn-group-vertical">
-                    <input type="submit" value="Записать JSON" class="btn btn-default btn-sm" onclick="sendJSON()">
-                    <input type="submit" value="Считать JSON" class="btn btn-default btn-sm" onclick="showJSON()">
-                </div>
-            </ul>
-
+                    <div class="btn-group-vertical">
+                        <input type="submit" value="Записать JSON" class="btn btn-default btn-sm" onclick="sendJSON()">
+                        <input type="submit" value="Считать JSON" class="btn btn-default btn-sm" onclick="showJSON()">
+                    </div>
+                </ul>
             </div>
         </div>
-
     </div>
 
     <div class="col-xs-10">
         <div id="map" class="map"><div id="popup"></div></div>
-        <div id="pos"></div>
     </div>
 
 </div>
