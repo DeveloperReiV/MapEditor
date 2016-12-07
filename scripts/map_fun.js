@@ -18,11 +18,12 @@ function initMap()
     map.on('click', function(evt) {
         $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
 
-        if(document.getElementById('noneToggle').checked || document.getElementById('selectToggle').checked) {
-            showPopupMarker(evt);                    //отобрразить всплывающее окно если кликнули по маркеру
+        //если выбран контроллер "выбрать"
+        if(document.getElementById('selectToggle').checked) {
+            showPopup(evt);                    //отобрразить всплывающее окно при клике по объекту
         }
 
-        //если выбран четбокс "Маркер" (получаем координаты, добавляем маркер)
+        //если выбран контроллер "Маркер" (получаем координаты, добавляем маркер)
         if(document.getElementById('markerToggle').checked){
             var hdms = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
             posX=hdms[0];   //долгота
@@ -32,17 +33,15 @@ function initMap()
     });
 
 
-
-
-    /*map.on('pointermove', function(e) {
-     if (e.dragging) {
-     $(elementPopup).popover('destroy');
-     return;
-     }
-     var pixel = map.getEventPixel(e.originalEvent);
-     var hit = map.hasFeatureAtPixel(pixel);
-     map.getTarget().style.cursor = hit ? 'pointer' : '';
-     });*/
+     map.on('pointermove', function(evt) {
+         if (evt.dragging) {
+            $(elementPopup).popover('destroy');
+            return;
+         }
+         var pixel = map.getEventPixel(evt.originalEvent);
+         var hit = map.hasFeatureAtPixel(pixel);
+         map.getTarget().style.cursor = hit ? 'pointer' : '';
+     });
 }
 
 //создание карты со слоем OSM и графическим слоем
@@ -100,7 +99,7 @@ function sendJSON(){
     var json = geoJSON.writeFeatures(sourceDraw.getFeatures()); //считываем данные из источника графики в вормат JSON
 
     //отправляем данные методом POST php обработчику в index.php
-    if(json) {
+    if(json != null) {
         $.ajax({
             type: 'POST',
             dataType: 'json',
@@ -114,29 +113,33 @@ function sendJSON(){
 
 //отображает полигоны и маркеры на основе данных из JSON
 function showJSON(){
-    if(arr_polygon) {
+    if(arr_polygon != null) {
         sourceDraw.addFeatures(geoJSON.readFeatures(arr_polygon)); //считываем данные из JSON в источник графики для векторного слоя
     }
-    if(arr_point){
-        getMarkerFromPoints();
+    if(arr_point != null){
+        getMarkerFromPoints(arr_point);
     }
 }
 
 //Функция рисования (полигон)
-function drawInteraction(){
+function drawInteraction(description){
+    if(description===undefined){
+        description="Вот это полигон!!!";
+    }
+
     //тип взаимодействия "создание графических данных"
     typeInteraction = new ol.interaction.Draw({
         source: sourceDraw,                     //рисовать здесь
-        type: "Polygon",                         //данные данного типа
+        type: "Polygon"                         //данные данного типа
     });
 
     //Задаем свойства полигона
     typeInteraction.on('drawend', function(e){
         e.feature.setProperties({
-            'name': 'Площадь'
+            name: 'Polygon',
+            description: description
         })
     });
-
     map.addInteraction(typeInteraction);        //добавляем данные к карте
 }
 
@@ -153,17 +156,17 @@ function selectInteraction(){
 }
 
 //Добавляет маркер на карту по координатам
-function addMarker(posX,posY,name){
+function addMarker(posX,posY,description){
 
-    if(name===undefined){
-        name="Маркер";
+    if(description===undefined){
+        description="Маркер";
     }
     map.removeInteraction(typeInteraction);                             //очищаем текущее взаимодействие
 
     var iconFeature = new ol.Feature({                                  //создаем объект для векторного слоя
         geometry: new ol.geom.Point(ol.proj.fromLonLat([posX,posY])),   //тип объекта "точка"
-        name: name,
-        //description: "bal",
+        name: "Marker",
+        description: description,
         population: 4000,
         rainfall: 500
     });
@@ -182,21 +185,23 @@ function addMarker(posX,posY,name){
 }
 
 //получаем маркеры из JSON строки с координатами точек и выводим на карту
-function getMarkerFromPoints(){
+function getMarkerFromPoints(arr_point){
     arr_point=JSON.parse(arr_point);    //преобразуем JSON в массив объектов
 
-    for(var i=0;i<arr_point.length;i++){
-        var x=arr_point[i]['geometry']['coordinates'][0];
-        var y=arr_point[i]['geometry']['coordinates'][1];
-        var name=arr_point[i]['properties']['name'];
-        var coor=ol.proj.transform([x,y], 'EPSG:3857', 'EPSG:4326');
+    if(arr_point != null){
+        for(var i=0;i<arr_point.length;i++){
+            var x=arr_point[i]['geometry']['coordinates'][0];
+            var y=arr_point[i]['geometry']['coordinates'][1];
+            var description=arr_point[i]['properties']['description'];
+            var coor=ol.proj.transform([x,y], 'EPSG:3857', 'EPSG:4326');
 
-        addMarker(coor[0],coor[1], name);
+            addMarker(coor[0],coor[1], description);
+        }
     }
 }
 
 //отобрразить всплывающее окно если кликнули по маркеру
-function showPopupMarker(evt){
+function showPopup(evt){
     var feature = map.forEachFeatureAtPixel(evt.pixel,  //определяем был ли клик по маркеру по разнице цветов пикселей слоев
         function(feature){
             return feature;
@@ -205,11 +210,21 @@ function showPopupMarker(evt){
     //если клик был по маркеру
     if (feature){
         var coordinates = feature.getGeometry().getCoordinates();   //получаем координаты
-        popup.setPosition(coordinates);                             //установка положения для всплывающего окна
+
+        if(feature.get('name')=='Marker'){
+            popup.setOffset([0,-45]);
+            popup.setPosition(coordinates);                         //установка положения для всплывающего окна
+        }
+
+        if(feature.get('name')=='Polygon'){
+            popup.setOffset([0,0]);
+            popup.setPosition(getCoordinatesMaxY(coordinates[0]));  //установка положения для всплывающего окна
+        }
+
         $(elementPopup).popover({                                   //открываем окно
             'placement': 'top',                                     //Расположение окна
             'html': true,
-            'content': feature.get('name')                          //содержимое
+            'content': feature.get('description')                          //содержимое
         });
         $(elementPopup).popover('show');
     } else {
@@ -222,13 +237,24 @@ function createPopup(){
     popup = new ol.Overlay({
         element: elementPopup,
         positioning: 'bottom-center',
-        stopEvent: false,
-        offset: [0, -50]
+        stopEvent: false
+        //offset: [0, -50]
     });
     map.addOverlay(popup);
 }
 
-//выбор контроллера рисования на панели управления
+//вернуть из массива координат пару координат с максимальным значением по оси Y
+function getCoordinatesMaxY(mas){
+    var max=mas[0];
+    for(var i=1;i<mas.length;i++){
+        if(max[1]<mas[i][1]){
+            max=mas[i];
+        }
+    }
+    return max;
+}
+
+//выбор контроллера "полигон"
 document.getElementById('polygonToggle').onchange = function(){
     map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
     drawInteraction();
@@ -249,4 +275,5 @@ document.getElementById('noneToggle').onchange = function(){
 document.getElementById('controlToggle').onchange = function(){
     $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
 };
+
 

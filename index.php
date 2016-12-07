@@ -64,7 +64,7 @@ if($_POST['item']) {
                 </div>
 
                 <div class="radio">
-                    <label for="selectToggle" title="Выбирает объект на карте (полигон) или выводит информацию о маркере">
+                    <label for="selectToggle" title="Выбор объекта на карте и вывод информации">
                         <input type="radio" name="type" value="Select" id="selectToggle"/>
                         Выбрать
                     </label>
