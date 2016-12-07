@@ -48,36 +48,42 @@ if($_POST['item']) {
             <div class="panel-heading">
                 <h3 class="panel-title">Панель инструментов</h3>
             </div>
-            <div class="panel-body">
-                <ul id="controlToggle" class="radio">
-                    <li>
+            <div class="panel-body" id="controlToggle">
+                <div class="radio">
+                    <label for="noneToggle" title="Навигация по карте при помощи мыши">
                         <input type="radio" name="type" value="None" id="noneToggle"/>
-                        <label for="noneToggle">Навигация</label>
-                    </li>
+                        Навигация
+                    </label>
+                </div>
 
-                    <li>
+                <div class="radio">
+                    <label for="polygonToggle" title="Активирует инструмент для рисования полигонов">
                         <input type="radio" name="type" value="Polygon" id="polygonToggle"/>
-                        <label for="polygonToggle">Полигон</label>
-                    </li>
+                        Полигон
+                    </label>
+                </div>
 
-                    <li>
-                        <input type="radio" name="type" value="Select" id="selectToggle""/>
-                        <label for="selectToggle">Выбрать</label>
-                    </li>
+                <div class="radio">
+                    <label for="selectToggle" title="Выбирает объект на карте (полигон) или выводит информацию о маркере">
+                        <input type="radio" name="type" value="Select" id="selectToggle"/>
+                        Выбрать
+                    </label>
+                </div>
 
-                    <li>
+                <div class="radio">
+                    <label for="markerToggle" title="Активирует инструмент для нанесения маркера на карту">
                         <input type="radio" name="type" value="Marker" id="markerToggle""/>
-                        <label for="markerToggle">Маркер</label>
-                    </li>
-                    <br/>
+                        Маркер
+                    </label>
+                </div>
 
-                    <div class="btn-group-vertical">
-                        <input type="submit" value="Записать JSON" class="btn btn-default btn-sm" onclick="sendJSON()">
-                        <input type="submit" value="Считать JSON" class="btn btn-default btn-sm" onclick="showJSON()">
-                    </div>
-                </ul>
+                <div class="btn-group-vertical">
+                    <input type="submit" value="Записать JSON" class="btn btn-default btn-sm" onclick="sendJSON()" title="Записывает все графические данные в JSON файл">
+                    <input type="submit" value="Считать JSON" class="btn btn-default btn-sm" onclick="showJSON()" title="Считывает все графические данные из JSON файла и выводит на карту">
+                </div>
             </div>
         </div>
+
     </div>
 
     <div class="col-xs-10">

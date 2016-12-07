@@ -14,7 +14,7 @@ function initMap()
     createPopup();                                          //зоздаем всплывающие окно для вывода информации
     document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
 
-    //событие клик по карте
+    //Слушаем событие клик по карте
     map.on('click', function(evt) {
         $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
 
@@ -30,6 +30,8 @@ function initMap()
             addMarker(posX,posY);   //добавляем маркер
         }
     });
+
+
 
 
     /*map.on('pointermove', function(e) {
@@ -79,7 +81,7 @@ function createMAP(){
 function addControlToMap(){
     //Контроллер положения мыши на карте
     var controlMousePosition = new ol.control.MousePosition({
-        coordinateFormat: ol.coordinate.toStringHDMS,  //формат вывода данных (4 знака после запятой)
+        coordinateFormat: ol.coordinate.toStringHDMS,       //формат вывода данных (4 знака после запятой)
         projection: 'EPSG:4326',                            //система координат
         className: 'posControlMousePosition'                //css класс
     });
@@ -120,13 +122,21 @@ function showJSON(){
     }
 }
 
-//Функция рисования
+//Функция рисования (полигон)
 function drawInteraction(){
     //тип взаимодействия "создание графических данных"
     typeInteraction = new ol.interaction.Draw({
         source: sourceDraw,                     //рисовать здесь
-        type: "Polygon"                         //данные данного типа
+        type: "Polygon",                         //данные данного типа
     });
+
+    //Задаем свойства полигона
+    typeInteraction.on('drawend', function(e){
+        e.feature.setProperties({
+            'name': 'Площадь'
+        })
+    });
+
     map.addInteraction(typeInteraction);        //добавляем данные к карте
 }
 
@@ -153,6 +163,7 @@ function addMarker(posX,posY,name){
     var iconFeature = new ol.Feature({                                  //создаем объект для векторного слоя
         geometry: new ol.geom.Point(ol.proj.fromLonLat([posX,posY])),   //тип объекта "точка"
         name: name,
+        //description: "bal",
         population: 4000,
         rainfall: 500
     });
@@ -227,6 +238,11 @@ document.getElementById('polygonToggle').onchange = function(){
 document.getElementById('selectToggle').onchange = function(){
     map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
     selectInteraction();
+};
+
+//Выбор контроллера "навигация"
+document.getElementById('noneToggle').onchange = function(){
+    map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
 };
 
 //Выбор любого контроллера
