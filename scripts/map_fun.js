@@ -41,15 +41,14 @@ function initMap()
         }
     });
 
-     /*map.on('pointermove', function(evt) {
-         if (evt.dragging) {
-            $(elementPopup).popover('destroy');
-            return;
-         }
-         var pixel = map.getEventPixel(evt.originalEvent);
-         var hit = map.hasFeatureAtPixel(pixel);
-         map.getTarget().style.cursor = hit ? 'pointer' : '';
-     });*/
+    //Слушаем событие вождения мыщью по карте
+    map.on("pointermove", function (evt){
+
+        //если выбран контроллер "выбрать" или "редактировать"
+        if(document.getElementById('selectToggle').checked || document.getElementById('modifyToggle').checked){
+            changeCursor(evt);          //Изменение курсора при наведении на объект
+        }
+    });
 }
 
 //создание карты со слоем OSM и графическим слоем
@@ -152,8 +151,11 @@ function drawInteraction(description){
     });
 
     //Задаем свойства полигона
-    drawInter.on('drawend', function(e){
-        e.feature.setProperties({
+    drawInter.on('drawend', function(evt){
+
+        //showEditPopup(evt);
+
+        evt.feature.setProperties({
             name: 'Polygon',
             description: description
         })
@@ -264,6 +266,39 @@ function showInfoPopup(evt){
     }
 }
 
+/*function showEditPopup(evt){
+    //определяем был ли клик по маркеру по разнице цветов пикселей слоев
+    var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature){
+        return feature;
+    });
+
+    //если клик был по маркеру
+    if (feature){
+        var coordinates = feature.getGeometry().getCoordinates();   //получаем координаты
+
+        if(feature.get('name')=='Marker'){
+            popup.setOffset([0,-45]);
+            popup.setPosition(coordinates);                         //установка положения для всплывающего окна
+        }
+
+        if(feature.get('name')=='Polygon'){
+            popup.setOffset([0,0]);
+            popup.setPosition(getCoordinatesMaxY(coordinates[0]));  //установка положения для всплывающего окна
+        }
+
+        var content="<input type='text' id='objInfo'><br><input type='button' value='ok'>";
+
+        $(elementPopup).popover({                                   //открываем окно
+            'placement': 'top',                                     //Расположение окна
+            'html': true,
+            'content': content                          //содержимое
+        });
+        $(elementPopup).popover('show');
+    } else {
+        $(elementPopup).popover('destroy');
+    }
+}*/
+
 //создаем всплывающие окно для вывода информации
 function createPopup(){
     popup = new ol.Overlay({
@@ -290,6 +325,24 @@ function clearAllInteraction(){
     map.removeInteraction(drawInter);
     map.removeInteraction(selectInter);
     map.removeInteraction(modifyInter);
+}
+
+
+//Изменить курсор
+function changeCursor(evt){
+    var target = map.getTarget();                                               //получаем цель
+    var jTarget = typeof target === "string" ? $("#"+target) : $(target);       //определяем тип цели
+    var mouseCoordInMapPixels = [evt.originalEvent.offsetX, evt.originalEvent.offsetY];
+
+    var hit = map.forEachFeatureAtPixel(mouseCoordInMapPixels, function(){      //определяем координаты мыши
+        return true;
+    });
+
+    if (hit) {
+        jTarget.css("cursor", "pointer");
+    } else {
+        jTarget.css("cursor", "");
+    }
 }
 
 

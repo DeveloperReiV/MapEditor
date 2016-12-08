@@ -4,7 +4,7 @@ require_once('strJSON.php');
 $file="drawing.json";
 $strJSON=new strJSON();
 
-if(file_exists($file)) {
+if(file_exists($file)){
     $fileJSON = file_get_contents($file);       //считываем файл
 
     $arr=$strJSON->get_geometry($fileJSON);     //получаем массивы с полигонами и точками
@@ -20,6 +20,8 @@ if($_POST['item']) {
     $json=$_POST['item'];
     file_put_contents($file,$json);
 }
+
+
 
 ?>
 
