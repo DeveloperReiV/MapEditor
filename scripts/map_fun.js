@@ -1,10 +1,18 @@
 var map, OSMLayer, mapView, drawLayer;                                  //слои карты
 var geoJSON = new ol.format.GeoJSON();                                  //экземпляр класса geoJSON
-var typeInteraction = null;                                             //ссылка на выбранный тип взаимодействия
-var sourceDraw = new ol.source.Vector({wrapX: false, format: geoJSON}); //источник графики для векторного слоя
 var posX, posY;                                                         //координаты щелчка мыши
 var popup;                                                              //всплывающие окно объект
 var elementPopup=document.getElementById('popup');                      //div контейнер всплывающее окно
+
+var drawInter = null;                                             //тип взаимодействия "рисование"
+var selectInter = null;                                           //тип взаимодействия "выделить (выбрать)"
+var modifyInter = null;                                           //тип взаимодействия "модификация"
+
+//источник графики для векторного слоя
+var sourceDraw = new ol.source.Vector({
+    wrapX: false,
+    format: geoJSON
+});
 
 //нициализация карты при загрузке страницы
 function initMap()
@@ -21,7 +29,7 @@ function initMap()
 
         //если выбран контроллер "выбрать"
         if(document.getElementById('selectToggle').checked) {
-            showPopup(evt);                    //отобрразить всплывающее окно при клике по объекту
+            showInfoPopup(evt);                    //отобрразить всплывающее окно при клике по объекту
         }
 
         //если выбран контроллер "Маркер" (получаем координаты, добавляем маркер)
@@ -32,7 +40,6 @@ function initMap()
             addMarker(posX,posY);   //добавляем маркер
         }
     });
-
 
      /*map.on('pointermove', function(evt) {
          if (evt.dragging) {
@@ -51,7 +58,7 @@ function createMAP(){
     //слой карты OpenStreetMap
     OSMLayer = new ol.layer.Tile({  //создание плитки карты
         source:new ol.source.OSM(), //данные карты беруться из OpenStreetMap
-        name: 'OpenStreetMap',
+        name: 'OSM',
         title: 'OpenStreetMap'
     });
 
@@ -139,31 +146,46 @@ function drawInteraction(description){
     }
 
     //тип взаимодействия "создание графических данных"
-    typeInteraction = new ol.interaction.Draw({
+    drawInter = new ol.interaction.Draw({
         source: sourceDraw,                     //рисовать здесь
         type: "Polygon"                         //данные данного типа
     });
 
     //Задаем свойства полигона
-    typeInteraction.on('drawend', function(e){
+    drawInter.on('drawend', function(e){
         e.feature.setProperties({
             name: 'Polygon',
             description: description
         })
     });
-    map.addInteraction(typeInteraction);        //добавляем данные к карте
+    if (drawInter !== null) {
+        map.addInteraction(drawInter);     //добавляем графические данные (реализуем взаимодействие)
+    }
 }
 
 //Быбор элемента на карте
 function selectInteraction(){
     //тип взаимодействия "выбор по клику мыши"
-    typeInteraction = new ol.interaction.Select({
+    selectInter = new ol.interaction.Select({
         condition: ol.events.condition.click
     });
-
-    if (typeInteraction !== null) {
-        map.addInteraction(typeInteraction);     //выбор объекта (реализуем взаимодействие)
+    if (selectInter !== null) {
+        map.addInteraction(selectInter);     //выбор объекта (реализуем взаимодействие)
     }
+}
+
+//Редактирование полигонов
+function modifyInteraction(){
+    selectInter = new ol.interaction.Select({
+        wrapX: false
+    });
+    map.addInteraction(selectInter);
+
+    modifyInter = new ol.interaction.Modify({
+        features: selectInter.getFeatures()
+    });
+
+    map.addInteraction(modifyInter);
 }
 
 //Добавляет маркер на карту по координатам
@@ -172,7 +194,6 @@ function addMarker(posX,posY,description){
     if(description===undefined){
         description="Маркер";
     }
-    map.removeInteraction(typeInteraction);                             //очищаем текущее взаимодействие
 
     var iconFeature = new ol.Feature({                                  //создаем объект для векторного слоя
         geometry: new ol.geom.Point(ol.proj.fromLonLat([posX,posY])),   //тип объекта "точка"
@@ -211,10 +232,10 @@ function getMarkerFromPoints(arr_point){
     }
 }
 
-//отобрразить всплывающее окно если кликнули по маркеру
-function showPopup(evt){
-    var feature = map.forEachFeatureAtPixel(evt.pixel,  //определяем был ли клик по маркеру по разнице цветов пикселей слоев
-        function(feature){
+//отобрразить всплывающее окно с информацией если кликнули по маркеру или полигону
+function showInfoPopup(evt){
+    //определяем был ли клик по маркеру по разнице цветов пикселей слоев
+    var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature){
             return feature;
         });
 
@@ -249,7 +270,6 @@ function createPopup(){
         element: elementPopup,
         positioning: 'bottom-center',
         stopEvent: false
-        //offset: [0, -50]
     });
     map.addOverlay(popup);
 }
@@ -265,26 +285,49 @@ function getCoordinatesMaxY(mas){
     return max;
 }
 
+//Очистить все типы взаимодействия
+function clearAllInteraction(){
+    map.removeInteraction(drawInter);
+    map.removeInteraction(selectInter);
+    map.removeInteraction(modifyInter);
+}
+
+
+//Выбор контроллера "навигация"
+document.getElementById('noneToggle').onchange = function(){
+    clearAllInteraction();                      //очищаем все взаимодействия
+};
+
 //выбор контроллера "полигон"
 document.getElementById('polygonToggle').onchange = function(){
-    map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
+    clearAllInteraction();                      //очищаем все взаимодействия
     drawInteraction();
+};
+
+//Выбор контроллера "Редактировать"
+document.getElementById('modifyToggle').onchange = function(){
+    clearAllInteraction();                      //очищаем все взаимодействия
+    modifyInteraction();
 };
 
 //Выбор котроллера "выбрать"
 document.getElementById('selectToggle').onchange = function(){
-    map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
+    clearAllInteraction();                      //очищаем все взаимодействия
     selectInteraction();
 };
 
-//Выбор контроллера "навигация"
-document.getElementById('noneToggle').onchange = function(){
-    map.removeInteraction(typeInteraction);         //очищаем текущее взаимодействие
+//Выбор контроллера "Маркер"
+document.getElementById('markerToggle').onchange = function(){
+    clearAllInteraction();                      //очищаем все взаимодействия
 };
 
 //Выбор любого контроллера
 document.getElementById('controlToggle').onchange = function(){
     $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
 };
+
+
+
+
 
 

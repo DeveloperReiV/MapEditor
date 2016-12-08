@@ -65,6 +65,13 @@ if($_POST['item']) {
                 </div>
 
                 <div class="radio">
+                    <label for="modifyToggle" title="Инструмент редактирования (правка полигонов и перемещение маркиров)">
+                        <input type="radio" name="type" value="Modify" id="modifyToggle"/>
+                        Редактировать
+                    </label>
+                </div>
+
+                <div class="radio">
                     <label for="selectToggle" title="Выбор объекта на карте и вывод информации">
                         <input type="radio" name="type" value="Select" id="selectToggle"/>
                         Выбрать
@@ -73,7 +80,7 @@ if($_POST['item']) {
 
                 <div class="radio">
                     <label for="markerToggle" title="Активирует инструмент для нанесения маркера на карту">
-                        <input type="radio" name="type" value="Marker" id="markerToggle""/>
+                        <input type="radio" name="type" value="Marker" id="markerToggle"/>
                         Маркер
                     </label>
                 </div>
