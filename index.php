@@ -3,30 +3,36 @@ mb_internal_encoding("UTF-8");
 require_once('lib/strJSON.php');
 require_once('lib/fnXML.php');
 
-$file="lib/drawing.json";
-$fileXML="lib/dataXML";
+$fileJSON="lib/drawing.json";
+$fieldsJSON="lib/fields.json";
+$fileXML="lib/dataXML.xml";
 
 
 $strJSON=new strJSON();
+$XML=new fnXML();
 
-if(file_exists($file)){
-    $fileJSON = file_get_contents($file);       //считываем файл
+$strXML=$XML->getXMLstring($fileXML);           //Получаем XML строку из файла
 
-    $arr=$strJSON->get_geometry($fileJSON);     //получаем массивы с полигонами и точками
-    $arr_polygon=$arr[0];                       //полигоны
-    $arr_point=$arr[1];                         //точки
 
-    $json11=json_decode($arr_polygon,true);
-    $json22=json_decode($arr_point,true);
+//Если приняты данные AJAX для считывания из файла
+if($_POST['fileField']){
+    $flname=$_POST['fileField'];
 
+    if(file_exists($flname)){
+        $file = file_get_contents($flname);         //считываем файл
+        $arr=$strJSON->get_geometry($file);         //получаем массивы с полигонами и точками
+        $arr_polygon=$arr[0];                       //полигоны
+        $arr_point=$arr[1];                         //точки
+    }
 }
 
-if($_POST['item']) {
-    $json=$_POST['item'];
-    file_put_contents($file,$json);
+
+//Если приняты данные AJAX для записи в файл
+if($_POST['item'] && $_POST['fileName']){
+    $json=$_POST['item'];                       //данные
+    $fileName=$_POST['fileName'];               //имя файла
+    file_put_contents($fileName,$json);         //записываем в файл
 }
-
-
 
 ?>
 
@@ -44,6 +50,9 @@ if($_POST['item']) {
 <script type="text/javascript">
     var arr_polygon = '<?php echo $arr_polygon;?>'; //запись массивов
     var arr_point = '<?php echo $arr_point;?>';     //в переменную JavaScript
+
+    var fileJSON = '<?php echo $fileJSON;?>';
+    var fieldsJSON = '<?php echo $fieldsJSON;?>';
 </script>
 
 
@@ -93,8 +102,8 @@ if($_POST['item']) {
                 </div>
 
                 <div class="btn-group-vertical">
-                    <input type="submit" value="Записать JSON" class="btn btn-default btn-sm" onclick="sendJSON()" title="Записывает все графические данные в JSON файл">
-                    <input type="submit" value="Считать JSON" class="btn btn-default btn-sm" onclick="showJSON()" title="Считывает все графические данные из JSON файла и выводит на карту">
+                    <input type="submit" value="Записать JSON" class="btn btn-default btn-sm" onclick="sendJSON(fileJSON)" title="Записывает все графические данные в JSON файл">
+                    <input type="submit" value="Считать JSON" class="btn btn-default btn-sm" onclick="setFileNameForDisplay(fileJSON);" title="Считывает все графические данные из JSON файла и выводит на карту">
                 </div>
             </div>
         </div>
@@ -102,7 +111,32 @@ if($_POST['item']) {
     </div>
 
     <div class="col-xs-10">
-        <div id="map" class="map"><div id="popup"></div></div>
+        <div id="map" class="map" style="height: 50%"><div id="popup" style="min-width: 300px;"></div></div><br>
+
+        <div class="panel panel-primary" id="PanelFieldInfo">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    Список полей в базе
+                    <input type="submit" value="Показать на карте" class="btn btn-default btn-xs" onclick="setFileNameForDisplay(fieldsJSON)">
+                </h3>
+            </div>
+            <div class="panel-body">
+                <? if($strXML){
+                    foreach($strXML->fields[0] as $item)
+                    {
+                    ?>
+                        <div class="alert alert-info">
+                            <strong>ID: </strong><?=$item[id]?><br>
+                            <strong>Номер: </strong><?=$item->number?><br>
+                            <strong>Описание: </strong><?=$item->description?><br><br>
+                            <input type="submit" value="Нарисовать на карте" class="btn btn-default btn-xs" onclick="AddFieldToMap(<? echo $item[id]?>,<? echo $item->number?>)">
+                        </div>
+                    <?
+                    }
+                } ?>
+            </div>
+        </div>
+
     </div>
 
 </div>

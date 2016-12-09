@@ -20,7 +20,7 @@ function initMap()
     createMAP();                                            //создаем карту
     addControlToMap();                                      //добавляем контроллеры управления
     createPopup();                                          //зоздаем всплывающие окно для вывода информации
-    document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
+    //document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
 
 
     //Слушаем событие клик по карте
@@ -112,7 +112,7 @@ function addControlToMap(){
 }
 
 //получает параметры слоя полигонов и маркеров в JSON формате и отправляет обработчику
-function sendJSON(){
+function sendJSON(fileName){
     var json = geoJSON.writeFeatures(sourceDraw.getFeatures()); //считываем данные из источника графики в вормат JSON
 
     //отправляем данные методом POST php обработчику в index.php
@@ -122,14 +122,16 @@ function sendJSON(){
             dataType: 'json',
             url: 'index.php',
             data: {
-                item: json
+                item: json,
+                fileName:fileName
             }
         });
     }
 }
 
 //отображает полигоны и маркеры на основе данных из JSON
-function showJSON(){
+function showJSON(arr_polygon, arr_point){
+
     if(arr_polygon != null) {
         sourceDraw.addFeatures(geoJSON.readFeatures(arr_polygon)); //считываем данные из JSON в источник графики для векторного слоя
     }
@@ -138,10 +140,31 @@ function showJSON(){
     }
 }
 
+//Отправка имени файла из которого будет сформирован и отбражен графический слой данных
+function setFileNameForDisplay(fileName){
+    //отправляем данные методом POST php обработчику в index.php
+    if(fileName != null) {
+        $.ajax({
+            type: 'POST',
+            dataType: 'text',
+            url: 'index.php',
+            data: {
+                fileField:fileName
+            }
+        });
+    }
+}
+
 //Функция рисования (полигон)
-function drawInteraction(description){
+function drawInteraction(id,number,description){
+    if(id===undefined){
+        id=-1;
+    }
+    if(number===undefined){
+        number=000;
+    }
     if(description===undefined){
-        description="Вот это полигон!!!";
+        description="Пусто";
     }
 
     //тип взаимодействия "создание графических данных"
@@ -154,6 +177,8 @@ function drawInteraction(description){
     drawInter.on('drawend', function(evt){
         evt.feature.setProperties({
             name: 'Polygon',
+            id:id,
+            number:number,
             description: description
         })
     });
@@ -241,21 +266,24 @@ function showInfoPopup(evt){
     //если объект не пуст (был клик по объекту)
     if (feature){
         var coordinates = feature.getGeometry().getCoordinates();   //получаем координаты
+        var content;
         //если это маркер
         if(feature.get('name')=='Marker'){
             popup.setOffset([0,-45]);
             popup.setPosition(coordinates);                         //установка положения для всплывающего окна
+            content=feature.get('description');
         }
         //если это полигон
         if(feature.get('name')=='Polygon'){
             popup.setOffset([0,0]);
             popup.setPosition(getCoordinatesMaxY(coordinates[0]));  //установка положения для всплывающего окна
+            content="Номер: "+feature.get('number')+"<br>"+"Описание: "+feature.get('description');
         }
 
         $(elementPopup).popover({                                   //открываем окно
             'placement': 'top',                                     //Расположение окна
             'html': true,
-            'content': feature.get('description')                          //содержимое
+            'content': content                          //содержимое
         });
         $(elementPopup).popover('show');
     } else {
@@ -291,7 +319,6 @@ function clearAllInteraction(){
     map.removeInteraction(modifyInter);
 }
 
-
 //Изменить курсор
 function changeCursor(evt){
     var target = map.getTarget();                                               //получаем цель
@@ -308,7 +335,6 @@ function changeCursor(evt){
         jTarget.css("cursor", "");
     }
 }
-
 
 //Выбор контроллера "навигация"
 document.getElementById('noneToggle').onchange = function(){
@@ -342,6 +368,22 @@ document.getElementById('markerToggle').onchange = function(){
 document.getElementById('controlToggle').onchange = function(){
     $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
 };
+
+
+
+//Добавить поле на карту
+function AddFieldToMap(id,number,description)
+{
+    clearAllInteraction();
+    drawInteraction(id,number,description);
+
+    map.on("dblclick", function (){
+        sendJSON(fieldsJSON);
+        clearAllInteraction();
+    });
+
+
+}
 
 
 

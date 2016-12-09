@@ -10,19 +10,18 @@ class strJSON
     {
         $json=json_decode($json,true);
 
-        $arr_polygon=array('type'=>'FeatureCollection','features'=>array());    //основание для массива полигонов
-
-        foreach($json['features'] as $key=>$value)
+        if($json!=null)
         {
-            if($value['geometry']['type']=='Point')
-            {
-                $array_point[]=$json['features'][$key];
+            $arr_polygon = array('type' => 'FeatureCollection', 'features' => array());    //основание для массива полигонов
+
+            foreach ($json['features'] as $key => $value) {
+                if ($value['geometry']['type'] == 'Point') {
+                    $array_point[] = $json['features'][$key];
+                } else {
+                    $arr_polygon['features'][] = $json['features'][$key];
+                }
             }
-            else
-            {
-                $arr_polygon['features'][]=$json['features'][$key];
-            }
+            return [json_encode($arr_polygon), json_encode($array_point)];
         }
-        return [json_encode($arr_polygon),json_encode($array_point)];
     }
 }

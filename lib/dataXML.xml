@@ -1,3 +1,14 @@
+<?xml version='1.0'?>
+<data>
 <fields>
-
+    <field id="1">
+        <number>48652</number>
+        <description>Участок вот такой вот</description>
+    </field>
+    <field id="2">
+        <number>55486</number>
+        <description>А еще такой есть</description>
+    </field>
 </fields>
+<fid>2</fid>
+</data>
