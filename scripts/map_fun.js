@@ -152,9 +152,6 @@ function drawInteraction(description){
 
     //Задаем свойства полигона
     drawInter.on('drawend', function(evt){
-
-        //showEditPopup(evt);
-
         evt.feature.setProperties({
             name: 'Polygon',
             description: description
@@ -236,20 +233,20 @@ function getMarkerFromPoints(arr_point){
 
 //отобрразить всплывающее окно с информацией если кликнули по маркеру или полигону
 function showInfoPopup(evt){
-    //определяем был ли клик по маркеру по разнице цветов пикселей слоев
+    //определяем был ли клик по объекту по разнице цветов пикселей слоев
     var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature){
             return feature;
         });
 
-    //если клик был по маркеру
+    //если объект не пуст (был клик по объекту)
     if (feature){
         var coordinates = feature.getGeometry().getCoordinates();   //получаем координаты
-
+        //если это маркер
         if(feature.get('name')=='Marker'){
             popup.setOffset([0,-45]);
             popup.setPosition(coordinates);                         //установка положения для всплывающего окна
         }
-
+        //если это полигон
         if(feature.get('name')=='Polygon'){
             popup.setOffset([0,0]);
             popup.setPosition(getCoordinatesMaxY(coordinates[0]));  //установка положения для всплывающего окна
@@ -265,39 +262,6 @@ function showInfoPopup(evt){
         $(elementPopup).popover('destroy');
     }
 }
-
-/*function showEditPopup(evt){
-    //определяем был ли клик по маркеру по разнице цветов пикселей слоев
-    var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature){
-        return feature;
-    });
-
-    //если клик был по маркеру
-    if (feature){
-        var coordinates = feature.getGeometry().getCoordinates();   //получаем координаты
-
-        if(feature.get('name')=='Marker'){
-            popup.setOffset([0,-45]);
-            popup.setPosition(coordinates);                         //установка положения для всплывающего окна
-        }
-
-        if(feature.get('name')=='Polygon'){
-            popup.setOffset([0,0]);
-            popup.setPosition(getCoordinatesMaxY(coordinates[0]));  //установка положения для всплывающего окна
-        }
-
-        var content="<input type='text' id='objInfo'><br><input type='button' value='ok'>";
-
-        $(elementPopup).popover({                                   //открываем окно
-            'placement': 'top',                                     //Расположение окна
-            'html': true,
-            'content': content                          //содержимое
-        });
-        $(elementPopup).popover('show');
-    } else {
-        $(elementPopup).popover('destroy');
-    }
-}*/
 
 //создаем всплывающие окно для вывода информации
 function createPopup(){

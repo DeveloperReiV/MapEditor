@@ -1,7 +1,12 @@
 <?php
 mb_internal_encoding("UTF-8");
-require_once('strJSON.php');
-$file="drawing.json";
+require_once('lib/strJSON.php');
+require_once('lib/fnXML.php');
+
+$file="lib/drawing.json";
+$fileXML="lib/dataXML";
+
+
 $strJSON=new strJSON();
 
 if(file_exists($file)){
