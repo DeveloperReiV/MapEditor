@@ -15,8 +15,7 @@ var sourceDraw = new ol.source.Vector({
 });
 
 //нициализация карты при загрузке страницы
-function initMap()
-{
+function initMap(){
     createMAP();                                            //создаем карту
     addControlToMap();                                      //добавляем контроллеры управления
     createPopup();                                          //зоздаем всплывающие окно для вывода информации
@@ -132,26 +131,11 @@ function sendJSON(fileName){
 //отображает полигоны и маркеры на основе данных из JSON
 function showJSON(arr_polygon, arr_point){
 
-    if(arr_polygon != null) {
+    if(arr_polygon != null && arr_polygon != "") {
         sourceDraw.addFeatures(geoJSON.readFeatures(arr_polygon)); //считываем данные из JSON в источник графики для векторного слоя
     }
-    if(arr_point != null){
+    if(arr_point != null && arr_point != ""){
         getMarkerFromPoints(arr_point);
-    }
-}
-
-//Отправка имени файла из которого будет сформирован и отбражен графический слой данных
-function setFileNameForDisplay(fileName){
-    //отправляем данные методом POST php обработчику в index.php
-    if(fileName != null) {
-        $.ajax({
-            type: 'POST',
-            dataType: 'text',
-            url: 'index.php',
-            data: {
-                fileField:fileName
-            }
-        });
     }
 }
 
@@ -369,11 +353,8 @@ document.getElementById('controlToggle').onchange = function(){
     $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
 };
 
-
-
 //Добавить поле на карту
-function AddFieldToMap(id,number,description)
-{
+function AddFieldToMap(id,number,description){
     clearAllInteraction();
     drawInteraction(id,number,description);
 
@@ -381,8 +362,6 @@ function AddFieldToMap(id,number,description)
         sendJSON(fieldsJSON);
         clearAllInteraction();
     });
-
-
 }
 
 

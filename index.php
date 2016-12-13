@@ -5,6 +5,7 @@ require_once('lib/fnXML.php');
 
 $fileJSON="lib/drawing.json";
 $fieldsJSON="lib/fields.json";
+
 $fileXML="lib/dataXML.xml";
 
 
@@ -14,16 +15,14 @@ $XML=new fnXML();
 $strXML=$XML->getXMLstring($fileXML);           //Получаем XML строку из файла
 
 
-//Если приняты данные AJAX для считывания из файла
-if($_POST['fileField']){
-    $flname=$_POST['fileField'];
+if(file_exists($fileJSON)){
+    $file = file_get_contents($fileJSON);         //считываем файл
+    $arrayJSON=$strJSON->get_geometry($file);     //получаем массивы с полигонами и точками
+}
 
-    if(file_exists($flname)){
-        $file = file_get_contents($flname);         //считываем файл
-        $arr=$strJSON->get_geometry($file);         //получаем массивы с полигонами и точками
-        $arr_polygon=$arr[0];                       //полигоны
-        $arr_point=$arr[1];                         //точки
-    }
+if(file_exists($fieldsJSON)){
+    $file = file_get_contents($fieldsJSON);         //считываем файл
+    $arrayFields=$strJSON->get_geometry($file);     //получаем массивы с полигонами и точками
 }
 
 
@@ -48,8 +47,11 @@ if($_POST['item'] && $_POST['fileName']){
 </head>
 
 <script type="text/javascript">
-    var arr_polygon = '<?php echo $arr_polygon;?>'; //запись массивов
-    var arr_point = '<?php echo $arr_point;?>';     //в переменную JavaScript
+    var arr_polygon_1 = '<?php echo $arrayJSON[0];?>';      //полигоны
+    var arr_point_1 = '<?php echo $arrayJSON[1];?>';        //точки
+
+    var arr_polygon_2 = '<?php echo $arrayFields[0];?>';    //полигоны
+    var arr_point_2 = '<?php echo $arrayFields[1];?>';     //точки
 
     var fileJSON = '<?php echo $fileJSON;?>';
     var fieldsJSON = '<?php echo $fieldsJSON;?>';
@@ -61,7 +63,7 @@ if($_POST['item'] && $_POST['fileName']){
 <div class="row">
     <div class="col-xs-2">
 
-        <div class="panel panel-primary">
+        <div class="panel panel-primary" id="PanelTool">
             <div class="panel-heading">
                 <h3 class="panel-title">Панель инструментов</h3>
             </div>
@@ -103,7 +105,7 @@ if($_POST['item'] && $_POST['fileName']){
 
                 <div class="btn-group-vertical">
                     <input type="submit" value="Записать JSON" class="btn btn-default btn-sm" onclick="sendJSON(fileJSON)" title="Записывает все графические данные в JSON файл">
-                    <input type="submit" value="Считать JSON" class="btn btn-default btn-sm" onclick="setFileNameForDisplay(fileJSON);" title="Считывает все графические данные из JSON файла и выводит на карту">
+                    <input type="submit" value="Считать JSON" class="btn btn-default btn-sm" onclick="showJSON(arr_polygon_1, arr_point_1)" title="Считывает все графические данные из JSON файла и выводит на карту">
                 </div>
             </div>
         </div>
@@ -111,13 +113,13 @@ if($_POST['item'] && $_POST['fileName']){
     </div>
 
     <div class="col-xs-10">
-        <div id="map" class="map" style="height: 50%"><div id="popup" style="min-width: 300px;"></div></div><br>
+        <div id="map" class="map" style="height: 70%"><div id="popup" style="min-width: 300px;"></div></div><br>
 
         <div class="panel panel-primary" id="PanelFieldInfo">
             <div class="panel-heading">
                 <h3 class="panel-title">
                     Список полей в базе
-                    <input type="submit" value="Показать на карте" class="btn btn-default btn-xs" onclick="setFileNameForDisplay(fieldsJSON)">
+                    <input type="submit" value="Показать на карте" class="btn btn-default btn-xs" onclick="showJSON(arr_polygon_2, arr_point_2)">
                 </h3>
             </div>
             <div class="panel-body">
@@ -129,7 +131,7 @@ if($_POST['item'] && $_POST['fileName']){
                             <strong>ID: </strong><?=$item[id]?><br>
                             <strong>Номер: </strong><?=$item->number?><br>
                             <strong>Описание: </strong><?=$item->description?><br><br>
-                            <input type="submit" value="Нарисовать на карте" class="btn btn-default btn-xs" onclick="AddFieldToMap(<? echo $item[id]?>,<? echo $item->number?>)">
+                            <input type="submit" value="Нарисовать на карте" class="btn btn-default btn-xs" onclick="AddFieldToMap(<? echo $item[id]?>,<? echo $item->number?>)"/>
                         </div>
                     <?
                     }
