@@ -131,7 +131,7 @@ if($_POST['item'] && $_POST['fileName']){
                             <strong>ID: </strong><?=$item[id]?><br>
                             <strong>Номер: </strong><?=$item->number?><br>
                             <strong>Описание: </strong><?=$item->description?><br><br>
-                            <input type="submit" value="Нарисовать на карте" class="btn btn-default btn-xs" onclick="AddFieldToMap(<? echo $item[id]?>,<? echo $item->number?>)"/>
+                            <input type="submit" value="Нарисовать на карте" class="btn btn-default btn-xs" onclick="AddFieldToMap('<? echo $item[id]?>','<? echo $item->number?>','<? echo $item->description?>')"/>
                         </div>
                     <?
                     }
