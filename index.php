@@ -120,7 +120,12 @@ if($_POST['item'] && $_POST['fileName']){
     </div>
 
     <div class="col-xs-10">
-        <div id="map" class="map" style="height: 70%"><div id="popup" style="min-width: 300px;"></div></div><br>
+        <div id="map" class="map" style="height: 70%"><div id="popup" style="min-width: 300px;"></div></div>
+
+        <div id="divModify" style="display: none">
+            <label id="labelModify"></label><br>
+            <input type="submit" value="Сохранить изменения" class="btn btn-default btn-xs" onclick="SaveModify()"/>
+        </div><br>
 
         <div class="panel panel-primary" id="PanelFieldInfo">
             <div class="panel-heading">
@@ -152,8 +157,8 @@ if($_POST['item'] && $_POST['fileName']){
                             {
                             ?>
                             <div class="btn-group">
-                                <input type="submit" value="Показать" id="btnShow" class="btn btn-default btn-xs" onclick="showOnCenter('<? echo $item[id]?>')"/>
-                                <input type="submit" value="Редактировать" class="btn btn-default btn-xs" />
+                                <input type="submit" value="Показать" class="btn btn-default btn-xs" onclick="showOnCenter('<? echo $item[id]?>',true)"/>
+                                <input type="submit" value="Редактировать" id="btnModifyField" class="btn btn-default btn-xs" onclick="modifyField('<? echo $item[id]?>','<? echo $item->number?>')"/>
                             </div>
                             <?
                             }

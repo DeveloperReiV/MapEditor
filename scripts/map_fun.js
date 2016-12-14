@@ -21,6 +21,7 @@ function initMap(){
     createPopup();                                          //зоздаем всплывающие окно для вывода информации
     //document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
 
+
     //Слушаем событие клик по карте
     map.on('click', function(evt) {
         $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
@@ -380,29 +381,73 @@ function AddFieldToMap(id,number,description){
 }
 
 //центрировать карту по координатам объекта с id
-function showOnCenter(id_feature){
-    var feature=sourceDraw.getFeatureById(id_feature);          //получаем объект по ID
+//вывести выплывающие окно с информацией и выделить объект
+function showOnCenter(id_feature,pup){
+    if(pup===undefined){
+        pup=false;
+    }
+
+    var feature=sourceDraw.getFeatureById(id_feature);                  //получаем объект по ID
+    map.removeInteraction(selectInter);
+
     if(feature!=null) {
-        var extend = feature.getGeometry().getExtent();               //получаем предатавление объекта (набор координат)
-        var cnt = ol.extent.getCenter(extend);                      //вычисляем координаты центра
-        var coordinates = feature.getGeometry().getCoordinates();   //получаем координаты
+        var extend = feature.getGeometry().getExtent();                 //получаем предатавление объекта (набор координат)
+        var cnt = ol.extent.getCenter(extend);                          //вычисляем координаты центра
+        var coordinates = feature.getGeometry().getCoordinates();       //получаем координаты
 
         mapView.animate({
             center: cnt,
             duration: 2000
         });
 
-        popup.setOffset([0, 0]);
-        popup.setPosition(getCoordinatesMaxY(coordinates[0]));      //установка положения для всплывающего окна
-        var content = "Номер: " + feature.get('number') + "<br>" + "Описание: " + feature.get('description');
-
-        $(elementPopup).popover({                                   //открываем окно
-            'placement': 'top',                                     //Расположение окна
-            'html': true,
-            'content': content                                      //содержимое
+        selectInter = new ol.interaction.Select();
+        var ft=selectInter.getFeatures({
+            condition: ol.events.condition.primaryAction,
+            wrapX: false
         });
-        $(elementPopup).popover('show');
+        ft.push(feature);
+        map.addInteraction(selectInter);
+
+        if(pup===true) {
+            popup.setOffset([0, 0]);
+            popup.setPosition(getCoordinatesMaxY(coordinates[0]));      //установка положения для всплывающего окна
+            var content = "Номер: " + feature.get('number') + "<br>" + "Описание: " + feature.get('description');
+            $(elementPopup).popover({                                   //открываем окно
+                'placement': 'top',                                     //Расположение окна
+                'html': true,
+                'content': content                                      //содержимое
+            });
+            $(elementPopup).popover('show');
+        }
     }
+
+    map.on('click',function(){
+        map.removeInteraction(selectInter);
+    })
+}
+
+//редактировать участок
+function modifyField(id,number){
+    document.getElementById('divModify').style.display='block';
+    document.getElementById('PanelFieldInfo').style.display='none';
+    document.getElementById('labelModify').innerText="Изменяем участок №"+number;
+    $(elementPopup).popover('destroy');
+    showOnCenter(id);
+
+    modifyInter = new ol.interaction.Modify({
+        features: selectInter.getFeatures()
+    });
+
+    map.addInteraction(modifyInter);
+}
+
+//сохранить изменения после редактирования
+function SaveModify(){
+    document.getElementById('PanelFieldInfo').style.display='block';
+    document.getElementById('divModify').style.display='none';
+    clearAllInteraction();
+    sendJSON(fieldsJSON);
+
 }
 
 
