@@ -83,6 +83,13 @@ if($_POST['item'] && $_POST['fileName']){
                 </div>
 
                 <div class="radio">
+                    <label for="polygonToggleHand" title="Активирует инструмент для рисования полигонов">
+                        <input type="radio" name="type" value="PolygonHand" id="polygonToggleHand"/>
+                        Полигон от руки
+                    </label>
+                </div>
+
+                <div class="radio">
                     <label for="modifyToggle" title="Инструмент редактирования (правка полигонов и перемещение маркиров)">
                         <input type="radio" name="type" value="Modify" id="modifyToggle"/>
                         Редактировать
@@ -131,7 +138,26 @@ if($_POST['item'] && $_POST['fileName']){
                             <strong>ID: </strong><?=$item[id]?><br>
                             <strong>Номер: </strong><?=$item->number?><br>
                             <strong>Описание: </strong><?=$item->description?><br><br>
-                            <input type="submit" value="Нарисовать на карте" class="btn btn-default btn-xs" onclick="AddFieldToMap('<? echo $item[id]?>','<? echo $item->number?>','<? echo $item->description?>')"/>
+                            <?
+                            $file = file_get_contents($fieldsJSON);
+                            $res=$strJSON->searhFieldToJSON($item[id],$file);
+
+                            if($res!=true)
+                            {
+                            ?>
+                                <input type="submit" value="Нарисовать на карте" class="btn btn-default btn-xs" onclick="AddFieldToMap('<? echo $item[id]?>','<? echo $item->number?>','<? echo $item->description?>')"/>
+                            <?
+                            }
+                            else
+                            {
+                            ?>
+                            <div class="btn-group">
+                                <input type="submit" value="Показать" id="btnShow" class="btn btn-default btn-xs" onclick="showOnCenter('<? echo $item[id]?>')"/>
+                                <input type="submit" value="Редактировать" class="btn btn-default btn-xs" />
+                            </div>
+                            <?
+                            }
+                            ?>
                         </div>
                     <?
                     }

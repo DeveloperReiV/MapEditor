@@ -24,4 +24,27 @@ class strJSON
             return [json_encode($arr_polygon), json_encode($array_point)];
         }
     }
+
+    //возвращает true если участок есть в JSON файле
+    function searhFieldToJSON($id,$json){
+        $json=json_decode($json,true);
+
+        if($json!=null)
+        {
+            foreach ($json['features'] as $value) {
+                $key = array_search($id, $value);
+
+                if($key!=null)
+                {
+                    return true;
+                    break;
+                }
+            }
+            return false;
+        }
+    }
+
+
+
+
 }

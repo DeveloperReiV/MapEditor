@@ -21,7 +21,6 @@ function initMap(){
     createPopup();                                          //зоздаем всплывающие окно для вывода информации
     //document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
 
-
     //Слушаем событие клик по карте
     map.on('click', function(evt) {
         $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
@@ -57,6 +56,7 @@ function createMAP(){
     OSMLayer = new ol.layer.Tile({  //создание плитки карты
         source:new ol.source.OSM(), //данные карты беруться из OpenStreetMap
         name: 'OSM',
+        preload: 4,
         title: 'OpenStreetMap'
     });
 
@@ -84,6 +84,7 @@ function createMAP(){
             layers:[OSMLayer,drawLayer]
         })
         ],
+        loadTilesWhileAnimating: true,
         view: mapView
     });
 }
@@ -140,31 +141,38 @@ function showJSON(arr_polygon, arr_point){
 }
 
 //Функция рисования (полигон)
-function drawInteraction(id,number,description){
+//hand-если равен true, полигон рисуется от руки
+function drawInteraction(hand,id,number,description){
     if(id===undefined){
         id=-1;
     }
     if(number===undefined){
-        number=000;
+        number=0;
     }
     if(description===undefined){
         description="Пусто";
+    }
+    if(hand===undefined){
+        hand=false;
     }
 
     //тип взаимодействия "создание графических данных"
     drawInter = new ol.interaction.Draw({
         source: sourceDraw,                     //рисовать здесь
-        type: "Polygon"                         //данные данного типа
+        type: "Polygon",                         //данные данного типа
+        freehand: hand
     });
 
     //Задаем свойства полигона
     drawInter.on('drawend', function(evt){
         evt.feature.setProperties({
             name: 'Polygon',
-            id:id,
+            //id:id,
             number:number,
             description: description
-        })
+        });
+        evt.feature.setId(id);
+
     });
     if (drawInter !== null) {
         map.addInteraction(drawInter);     //добавляем графические данные (реализуем взаимодействие)
@@ -267,7 +275,7 @@ function showInfoPopup(evt){
         $(elementPopup).popover({                                   //открываем окно
             'placement': 'top',                                     //Расположение окна
             'html': true,
-            'content': content                          //содержимое
+            'content': content                                      //содержимое
         });
         $(elementPopup).popover('show');
     } else {
@@ -331,6 +339,12 @@ document.getElementById('polygonToggle').onchange = function(){
     drawInteraction();
 };
 
+//выбор контроллера "полигон от руки"
+document.getElementById('polygonToggleHand').onchange = function(){
+    clearAllInteraction();                      //очищаем все взаимодействия
+    drawInteraction(true);
+};
+
 //Выбор контроллера "Редактировать"
 document.getElementById('modifyToggle').onchange = function(){
     clearAllInteraction();                      //очищаем все взаимодействия
@@ -356,13 +370,42 @@ document.getElementById('controlToggle').onchange = function(){
 //Добавить поле на карту
 function AddFieldToMap(id,number,description){
     clearAllInteraction();
-    drawInteraction(id,number,description);
+    drawInteraction(false,id,number,description);
 
     map.on("dblclick", function (){
         sendJSON(fieldsJSON);
         clearAllInteraction();
+        location.reload();
     });
 }
+
+//центрировать карту по координатам объекта с id
+function showOnCenter(id_feature){
+    var feature=sourceDraw.getFeatureById(id_feature);          //получаем объект по ID
+    if(feature!=null) {
+        var extend = feature.getGeometry().getExtent();               //получаем предатавление объекта (набор координат)
+        var cnt = ol.extent.getCenter(extend);                      //вычисляем координаты центра
+        var coordinates = feature.getGeometry().getCoordinates();   //получаем координаты
+
+        mapView.animate({
+            center: cnt,
+            duration: 2000
+        });
+
+        popup.setOffset([0, 0]);
+        popup.setPosition(getCoordinatesMaxY(coordinates[0]));      //установка положения для всплывающего окна
+        var content = "Номер: " + feature.get('number') + "<br>" + "Описание: " + feature.get('description');
+
+        $(elementPopup).popover({                                   //открываем окно
+            'placement': 'top',                                     //Расположение окна
+            'html': true,
+            'content': content                                      //содержимое
+        });
+        $(elementPopup).popover('show');
+    }
+}
+
+
 
 
 
