@@ -448,6 +448,9 @@ function SaveModify(){
     clearAllInteraction();
     sendJSON(fieldsJSON);
 
+    clearAllInteraction();
+    sendJSON(fieldsJSON);
+    document.getElementById('PanelFieldInfo').style.display='block';
 }
 
 
