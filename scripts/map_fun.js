@@ -398,7 +398,7 @@ function showOnCenter(id_feature,pup){
     var feature=sourceDraw.getFeatureById(id_feature);                  //получаем объект по ID
     map.removeInteraction(selectInter);
 
-    if(feature!=null) {
+    if(feature!=null){
         var extent = feature.getGeometry().getExtent();                 //получаем предатавление объекта (набор координат)
        // var cnt = ol.extent.getCenter(extent);                          //вычисляем координаты центра
         var coordinates = feature.getGeometry().getCoordinates();       //получаем координаты
@@ -408,9 +408,16 @@ function showOnCenter(id_feature,pup){
             duration: 2000
         });*/
 
-        mapView.fit(extent, map.getSize());
-        mapView.setZoom(mapView.getZoom()-1);
+        /*mapView.fit(extent, map.getSize());
+        mapView.setZoom(mapView.getZoom()-1);*/
 
+        var pan = ol.animation.pan({ source: mapView.getCenter()});             //анимированный переход при изменении центра
+        var zoom = ol.animation.zoom({ resolution: mapView.getResolution()});   //анимированный переход при изменении масштаба
+        map.beforeRender(pan, zoom);                                            //применяем параметры анимации
+        mapView.fit(extent, map.getSize());                                     //устанавливаем геометрию просмотра
+        mapView.setZoom(mapView.getZoom()-1);                                   //уменьшаем значение масштаба на 1 для смотрибельности
+
+        //Выделение объекта
         selectInter = new ol.interaction.Select();
         var ft=selectInter.getFeatures({
             wrapX: false
@@ -418,6 +425,7 @@ function showOnCenter(id_feature,pup){
         ft.push(feature);
         map.addInteraction(selectInter);
 
+        //вывод всплывающего окна
         if(pup===true) {
             popup.setOffset([0, 0]);
             popup.setPosition(getCoordinatesMaxY(coordinates[0]));      //установка положения для всплывающего окна

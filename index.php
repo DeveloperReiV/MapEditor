@@ -145,12 +145,12 @@ if($_POST['item'] && $_POST['fileName']){
                     {
                     ?>
                         <div class="alert alert-info">
-                            <strong>ID: </strong><?=$item[id]?><br>
-                            <strong>Номер: </strong><?=$item->number?><br>
+                            <strong>ID:       </strong><?=$item[id]?><br>
+                            <strong>Номер:    </strong><?=$item->number?><br>
                             <strong>Описание: </strong><?=$item->description?><br><br>
                             <?
-                            $file = file_get_contents($fieldsJSON);
-                            $res=$strJSON->searhFieldToJSON($item[id],$file);
+                            $file = file_get_contents($fieldsJSON);             //считываем файл
+                            $res=$strJSON->searhFieldToJSON($item[id],$file);   //поиск объекта по ID в JSON
 
                             if($res!=true)
                             {
