@@ -370,14 +370,21 @@ document.getElementById('controlToggle').onchange = function(){
 
 //Добавить поле на карту
 function AddFieldToMap(id,number,description){
+
+    document.getElementById('divAdd').style.display='block';
+    document.getElementById('PanelFieldInfo').style.display='none';
+    document.getElementById('labelAdd').innerText="Добавляем участок №"+number;
+    $(elementPopup).popover('destroy');
+
     clearAllInteraction();
     drawInteraction(false,id,number,description);
+}
 
-    map.on("dblclick", function (){
-        sendJSON(fieldsJSON);
-        clearAllInteraction();
-        location.reload();
-    });
+function SaveAddField(){
+    document.getElementById('PanelFieldInfo').style.display='block';
+    document.getElementById('divAdd').style.display='none';
+    sendJSON(fieldsJSON);
+    location.reload();
 }
 
 //центрировать карту по координатам объекта с id
@@ -386,23 +393,26 @@ function showOnCenter(id_feature,pup){
     if(pup===undefined){
         pup=false;
     }
+    $(elementPopup).popover('destroy');
 
     var feature=sourceDraw.getFeatureById(id_feature);                  //получаем объект по ID
     map.removeInteraction(selectInter);
 
     if(feature!=null) {
-        var extend = feature.getGeometry().getExtent();                 //получаем предатавление объекта (набор координат)
-        var cnt = ol.extent.getCenter(extend);                          //вычисляем координаты центра
+        var extent = feature.getGeometry().getExtent();                 //получаем предатавление объекта (набор координат)
+       // var cnt = ol.extent.getCenter(extent);                          //вычисляем координаты центра
         var coordinates = feature.getGeometry().getCoordinates();       //получаем координаты
 
-        mapView.animate({
+        /*mapView.animate({
             center: cnt,
             duration: 2000
-        });
+        });*/
+
+        mapView.fit(extent, map.getSize());
+        mapView.setZoom(mapView.getZoom()-1);
 
         selectInter = new ol.interaction.Select();
         var ft=selectInter.getFeatures({
-            condition: ol.events.condition.primaryAction,
             wrapX: false
         });
         ft.push(feature);
@@ -418,6 +428,8 @@ function showOnCenter(id_feature,pup){
                 'content': content                                      //содержимое
             });
             $(elementPopup).popover('show');
+        }else {
+            $(elementPopup).popover('destroy');
         }
     }
 

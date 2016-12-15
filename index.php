@@ -127,6 +127,11 @@ if($_POST['item'] && $_POST['fileName']){
             <input type="submit" value="Сохранить изменения" class="btn btn-default btn-xs" onclick="SaveModify()"/>
         </div><br>
 
+        <div id="divAdd" style="display: none">
+            <label id="labelAdd"></label><br>
+            <input type="submit" value="Сохранить изменения" class="btn btn-default btn-xs" onclick="SaveAddField()"/>
+        </div><br>
+
         <div class="panel panel-primary" id="PanelFieldInfo">
             <div class="panel-heading">
                 <h3 class="panel-title">
