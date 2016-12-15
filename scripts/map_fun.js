@@ -447,10 +447,15 @@ function SaveModify(){
     document.getElementById('divModify').style.display='none';
     clearAllInteraction();
     sendJSON(fieldsJSON);
+}
 
-    clearAllInteraction();
-    sendJSON(fieldsJSON);
-    document.getElementById('PanelFieldInfo').style.display='block';
+//удаляем поле с карты
+function deleteField(id){
+    clearAllInteraction();                                      //очищаем все взаимодействия
+    var feature=sourceDraw.getFeatureById(id);                  //получаем объект по ID
+    sourceDraw.removeFeature(feature);                          //удаляем объект
+    sendJSON(fieldsJSON);                                       //сохраняем файл
+    location.reload();                                          //обновляем
 }
 
 
