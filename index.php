@@ -39,11 +39,11 @@ if($_POST['item'] && $_POST['fileName']){
 <head>
 <title>MapEditor</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="style/ol.css" type="text/css">
-    <link rel="stylesheet" href="style/style.css" type="text/css">
-    <link rel="stylesheet" href="style/bootstrap.css" type="text/css">
-    <link rel="stylesheet" href="style/bootstrap-theme.css" type="text/css">
-    <link rel="stylesheet" href="style/ol3-layerswitcher.css" type="text/css">
+    <link rel="stylesheet" href="style/ol.css" type="text/css" rel="stylesheet">
+    <link rel="stylesheet" href="style/style.css" type="text/css" rel="stylesheet">
+    <link rel="stylesheet" href="style/bootstrap.css" type="text/css" rel="stylesheet">
+    <link rel="stylesheet" href="style/bootstrap-theme.css" type="text/css" rel="stylesheet">
+    <link rel="stylesheet" href="style/ol3-layerswitcher.css" type="text/css" rel="stylesheet">
 </head>
 
 <script type="text/javascript">
@@ -124,12 +124,28 @@ if($_POST['item'] && $_POST['fileName']){
 
         <div id="divModify" style="display: none">
             <label id="labelModify"></label><br>
-            <input type="submit" value="Сохранить изменения" class="btn btn-default btn-xs" onclick="SaveModify()"/>
+            <div class="btn-group">
+                <input type="submit" value="Сохранить изменения" class="btn btn-default btn-xs" onclick="SaveModify()"/>
+                <input type="submit" value="Отмена" class="btn btn-default btn-xs" onclick="cancelOperation('divModify')"/>
+            </div>
         </div><br>
 
         <div id="divAdd" style="display: none">
             <label id="labelAdd"></label><br>
-            <input type="submit" value="Сохранить изменения" class="btn btn-default btn-xs" onclick="SaveAddField()"/>
+
+            <label>Цвет</label>
+            <select id="selectColor">
+                <option>Выберете цвет</option>
+                <option value='#0000FF' style="background: #0000FF;">Синий</option>
+                <option value='#00FF00' style="background: #00FF00;">Зеленый</option>
+                <option value='#FFFF00' style="background: #FFFF00;">Желтый</option>
+                <option value='#FF0000' style="background: #FF0000;">Красный</option>
+            </select>
+
+            <div class="btn-group">
+                <input type="submit" id="btnAddSave" value="Сохранить изменения" class="btn btn-default btn-xs" onclick="SaveAddField()"/>
+                <input type="submit" value="Отмена" class="btn btn-default btn-xs" onclick="cancelOperation('divAdd')"/>
+            </div>
         </div><br>
 
         <div class="panel panel-primary" id="PanelFieldInfo">

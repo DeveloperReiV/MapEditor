@@ -5,14 +5,16 @@ var popup;                                                              //всп
 var elementPopup=document.getElementById('popup');                      //div контейнер всплывающее окно
 
 var drawInter = null;                                             //тип взаимодействия "рисование"
-var selectInter = null;                                           //тип взаимодействия "выделить (выбрать)"
+var selectInter = new ol.interaction.Select();                    //тип взаимодействия "выделить (выбрать)"
 var modifyInter = null;                                           //тип взаимодействия "модификация"
+var colorDefault=[173,216,230,.5];
 
 //источник графики для векторного слоя
 var sourceDraw = new ol.source.Vector({
     wrapX: false,
     format: geoJSON
 });
+
 
 //нициализация карты при загрузке страницы
 function initMap(){
@@ -136,14 +138,51 @@ function showJSON(arr_polygon, arr_point){
     if(arr_polygon != null && arr_polygon != "") {
         sourceDraw.addFeatures(geoJSON.readFeatures(arr_polygon)); //считываем данные из JSON в источник графики для векторного слоя
     }
+    setStylePolygonFromJSON();
     if(arr_point != null && arr_point != ""){
         getMarkerFromPoints(arr_point);
     }
 }
 
+//Задаем стиль полигонов при загрузке из файла
+function setStylePolygonFromJSON(){
+    var features = sourceDraw.getFeatures();
+
+    for(var i=0;i<features.length;i++){
+        if(features[i].get('name')==='Polygon') {
+            var color = features[i].get("color");
+            var number = features[i].get("number");
+
+            if(color!==undefined && number!==undefined) {
+                style(features[i], color,number);
+            }else{
+                //style(features[i], colorDefault,null);
+            }
+        }
+    }
+}
+
+//задать стиль
+function style(feature,color,number){
+    feature.setStyle(
+        new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: '#000000',
+                width: 3
+            }),
+            fill: new ol.style.Fill({
+                color: color
+            }),
+            text: new ol.style.Text({
+                text:number,
+                scale: 1.5
+            })
+        }))
+}
+
 //Функция рисования (полигон)
 //hand-если равен true, полигон рисуется от руки
-function drawInteraction(hand,id,number,description){
+function drawInteraction(hand,id,number,description,color){
     if(id===undefined){
         id=-1;
     }
@@ -155,6 +194,9 @@ function drawInteraction(hand,id,number,description){
     }
     if(hand===undefined){
         hand=false;
+    }
+    if(color===undefined){
+        color='blue';
     }
 
     //тип взаимодействия "создание графических данных"
@@ -168,27 +210,51 @@ function drawInteraction(hand,id,number,description){
     drawInter.on('drawend', function(evt){
         evt.feature.setProperties({
             name: 'Polygon',
-            //id:id,
-            number:number,
-            description: description
+            number: number,
+            description: description,
+            color: color
         });
         evt.feature.setId(id);
-
+        style(evt.feature,color);
     });
+
     if (drawInter !== null) {
         map.addInteraction(drawInter);     //добавляем графические данные (реализуем взаимодействие)
     }
 }
 
 //Быбор элемента на карте
-function selectInteraction(){
-    //тип взаимодействия "выбор по клику мыши"
-    selectInter = new ol.interaction.Select({
-        condition: ol.events.condition.click
-    });
-    if (selectInter !== null) {
+function selectInteraction(select,feature){
+    if (select !== null) {
         map.addInteraction(selectInter);     //выбор объекта (реализуем взаимодействие)
     }
+
+    if(feature!==undefined){
+        var ft=select.getFeatures({
+            wrapX: false
+        });
+        ft.push(feature);
+    }
+
+    /*selectInter.on('select',function(evt){
+        var col;
+        if(evt['selected'][0].get('color')===undefined){
+            col=colorDefault;
+        }else{
+            col=evt['selected'][0].get('color');
+        }
+
+        var styleSelect = new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: '#00BFFF',
+                width: 5
+            }),
+            fill: new ol.style.Fill({
+                color: col
+            })
+        });
+        evt['selected'][0].setStyle(styleSelect);
+    });*/
 }
 
 //Редактирование полигонов
@@ -355,7 +421,7 @@ document.getElementById('modifyToggle').onchange = function(){
 //Выбор котроллера "выбрать"
 document.getElementById('selectToggle').onchange = function(){
     clearAllInteraction();                      //очищаем все взаимодействия
-    selectInteraction();
+    selectInteraction(selectInter);
 };
 
 //Выбор контроллера "Маркер"
@@ -374,10 +440,18 @@ function AddFieldToMap(id,number,description){
     document.getElementById('divAdd').style.display='block';
     document.getElementById('PanelFieldInfo').style.display='none';
     document.getElementById('labelAdd').innerText="Добавляем участок №"+number;
+    document.getElementById('btnAddSave').disabled = true;
     $(elementPopup).popover('destroy');
 
+    var color=document.getElementById('selectColor');
     clearAllInteraction();
-    drawInteraction(false,id,number,description);
+
+    color.onchange=function() {
+        if (color.value !== null) {
+            document.getElementById('btnAddSave').disabled = false;
+            drawInteraction(false, id, number, description, color.value);
+        }
+    }
 }
 
 function SaveAddField(){
@@ -400,16 +474,7 @@ function showOnCenter(id_feature,pup){
 
     if(feature!=null){
         var extent = feature.getGeometry().getExtent();                 //получаем предатавление объекта (набор координат)
-       // var cnt = ol.extent.getCenter(extent);                          //вычисляем координаты центра
         var coordinates = feature.getGeometry().getCoordinates();       //получаем координаты
-
-        /*mapView.animate({
-            center: cnt,
-            duration: 2000
-        });*/
-
-        /*mapView.fit(extent, map.getSize());
-        mapView.setZoom(mapView.getZoom()-1);*/
 
         var pan = ol.animation.pan({ source: mapView.getCenter()});             //анимированный переход при изменении центра
         var zoom = ol.animation.zoom({ resolution: mapView.getResolution()});   //анимированный переход при изменении масштаба
@@ -418,12 +483,7 @@ function showOnCenter(id_feature,pup){
         mapView.setZoom(mapView.getZoom()-1);                                   //уменьшаем значение масштаба на 1 для смотрибельности
 
         //Выделение объекта
-        selectInter = new ol.interaction.Select();
-        var ft=selectInter.getFeatures({
-            wrapX: false
-        });
-        ft.push(feature);
-        map.addInteraction(selectInter);
+        selectInteraction(selectInter,feature)
 
         //вывод всплывающего окна
         if(pup===true) {
@@ -478,6 +538,12 @@ function deleteField(id){
     location.reload();                                          //обновляем
 }
 
+//отмена операции добавления или редактирования
+function cancelOperation(div){
+    document.getElementById('PanelFieldInfo').style.display='block';
+    document.getElementById(div).style.display='none';
+    clearAllInteraction();
+}
 
 
 
