@@ -7,7 +7,7 @@ var elementPopup=document.getElementById('popup');                      //div к
 var drawInter = null;                                             //тип взаимодействия "рисование"
 var selectInter = new ol.interaction.Select();                    //тип взаимодействия "выделить (выбрать)"
 var modifyInter = null;                                           //тип взаимодействия "модификация"
-var colorDefault=[173,216,230,.5];
+//var colorDefault=[173,216,230,.5];
 
 //источник графики для векторного слоя
 var sourceDraw = new ol.source.Vector({
@@ -23,13 +23,14 @@ function initMap(){
     createPopup();                                          //зоздаем всплывающие окно для вывода информации
     //document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
 
+    showJSON(arr_polygon_2, arr_point_2);
 
     //Слушаем событие клик по карте
     map.on('click', function(evt) {
         $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
 
         //если выбран контроллер "выбрать"
-        if(document.getElementById('selectToggle').checked) {
+        if(document.getElementById('selectToggle').checked || document.getElementById('checkSelect').checked) {
             showInfoPopup(evt);                    //отобрразить всплывающее окно при клике по объекту
         }
 
@@ -46,7 +47,7 @@ function initMap(){
     map.on("pointermove", function (evt){
 
         //если выбран контроллер "выбрать" или "редактировать"
-        if(document.getElementById('selectToggle').checked || document.getElementById('modifyToggle').checked){
+        if(document.getElementById('selectToggle').checked || document.getElementById('modifyToggle').checked || document.getElementById('checkSelect').checked){
             changeCursor(evt);          //Изменение курсора при наведении на объект
         }
     });
@@ -76,7 +77,7 @@ function createMAP(){
     //вид карты (зум и координаты центра)
     mapView = new ol.View({
         center: ol.proj.fromLonLat([36.2754200,54.5293000]), //координаты Калуги
-        zoom: 11
+        zoom: 13
     });
 
     //Контейнер карты
@@ -259,9 +260,9 @@ function selectInteraction(select,feature){
 
 //Редактирование полигонов
 function modifyInteraction(){
-    selectInter = new ol.interaction.Select({
+    /*selectInter = new ol.interaction.Select({
         wrapX: false
-    });
+    });*/
     map.addInteraction(selectInter);
 
     modifyInter = new ol.interaction.Modify({
@@ -340,9 +341,9 @@ function showInfoPopup(evt){
         }
 
         $(elementPopup).popover({                                   //открываем окно
-            'placement': 'top',                                     //Расположение окна
-            'html': true,
-            'content': content                                      //содержимое
+            placement: 'top',                                     //расположение окна
+            html: true,
+            content: content                                      //содержимое
         });
         $(elementPopup).popover('show');
     } else {
@@ -355,7 +356,7 @@ function createPopup(){
     popup = new ol.Overlay({
         element: elementPopup,
         positioning: 'bottom-center',
-        stopEvent: false
+        stopEvent: false,
     });
     map.addOverlay(popup);
 }
@@ -376,6 +377,7 @@ function clearAllInteraction(){
     map.removeInteraction(drawInter);
     map.removeInteraction(selectInter);
     map.removeInteraction(modifyInter);
+    $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
 }
 
 //Изменить курсор
@@ -441,10 +443,9 @@ function AddFieldToMap(id,number,description){
     document.getElementById('PanelFieldInfo').style.display='none';
     document.getElementById('labelAdd').innerText="Добавляем участок №"+number;
     document.getElementById('btnAddSave').disabled = true;
-    $(elementPopup).popover('destroy');
+    clearAllInteraction();
 
     var color=document.getElementById('selectColor');
-    clearAllInteraction();
 
     color.onchange=function() {
         if (color.value !== null) {
@@ -454,6 +455,7 @@ function AddFieldToMap(id,number,description){
     }
 }
 
+//сохранить отрисованное поле
 function SaveAddField(){
     document.getElementById('PanelFieldInfo').style.display='block';
     document.getElementById('divAdd').style.display='none';
@@ -512,6 +514,7 @@ function modifyField(id,number){
     document.getElementById('PanelFieldInfo').style.display='none';
     document.getElementById('labelModify').innerText="Изменяем участок №"+number;
     $(elementPopup).popover('destroy');
+    //changeCursor(sourceDraw.getFeatureById(id));
     showOnCenter(id);
 
     modifyInter = new ol.interaction.Modify({
@@ -543,6 +546,16 @@ function cancelOperation(div){
     document.getElementById('PanelFieldInfo').style.display='block';
     document.getElementById(div).style.display='none';
     clearAllInteraction();
+}
+
+//события выбора checkBox
+function checkBoxActive(box){
+    if(box.checked){
+        clearAllInteraction();                      //очищаем все взаимодействия
+        selectInteraction(selectInter);
+    }else{
+        clearAllInteraction();                      //очищаем все взаимодействия
+    }
 }
 
 

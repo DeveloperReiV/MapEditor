@@ -65,9 +65,9 @@ if($_POST['item'] && $_POST['fileName']){
 
         <div class="panel panel-primary" id="PanelTool">
             <div class="panel-heading">
-                <h3 class="panel-title">Панель инструментов</h3>
+                <h3 class="panel-title">Панель инструментов <input type="submit" value="Показать" class="btn btn-default btn-xs" onclick="document.getElementById('controlToggle').style.display='block'"/></h3>
             </div>
-            <div class="panel-body" id="controlToggle">
+            <div class="panel-body" id="controlToggle" style="display: none;">
                 <div class="radio">
                     <label for="noneToggle" title="Навигация по карте при помощи мыши">
                         <input type="radio" name="type" value="None" id="noneToggle"/>
@@ -120,7 +120,7 @@ if($_POST['item'] && $_POST['fileName']){
     </div>
 
     <div class="col-xs-10">
-        <div id="map" class="map" style="height: 70%"><div id="popup" style="min-width: 300px;"></div></div>
+        <div id="map" class="map" style="height: 70%"><div id="popup" style="min-width: 300px;" title="информация"></div></div>
 
         <div id="divModify" style="display: none">
             <label id="labelModify"></label><br>
@@ -136,10 +136,12 @@ if($_POST['item'] && $_POST['fileName']){
             <label>Цвет</label>
             <select id="selectColor">
                 <option>Выберете цвет</option>
-                <option value='#0000FF' style="background: #0000FF;">Синий</option>
-                <option value='#00FF00' style="background: #00FF00;">Зеленый</option>
-                <option value='#FFFF00' style="background: #FFFF00;">Желтый</option>
-                <option value='#FF0000' style="background: #FF0000;">Красный</option>
+                <option value='#0000FF' style="background: #0000FF;">Blue</option>
+                <option value='#00FF00' style="background: #00FF00;">Green</option>
+                <option value='#FFFF00' style="background: #FFFF00;">Yellow</option>
+                <option value='#FF0000' style="background: #FF0000;">Red</option>
+                <option value='#006400' style="background: #006400;">DarkGreen</option>
+                <option value='#00FFFF' style="background: #00FFFF;">Cyan</option>
             </select>
 
             <div class="btn-group">
@@ -153,6 +155,7 @@ if($_POST['item'] && $_POST['fileName']){
                 <h3 class="panel-title">
                     Список полей в базе
                     <input type="submit" value="Показать на карте" class="btn btn-default btn-xs" onclick="showJSON(arr_polygon_2, arr_point_2)">
+                    <input type="checkbox" id="checkSelect" onclick="checkBoxActive(this)">Ручной выбор
                 </h3>
             </div>
             <div class="panel-body">
@@ -165,7 +168,10 @@ if($_POST['item'] && $_POST['fileName']){
                             <strong>Номер:    </strong><?=$item->number?><br>
                             <strong>Описание: </strong><?=$item->description?><br><br>
                             <?
-                            $file = file_get_contents($fieldsJSON);             //считываем файл
+                            if(file_exists($fieldsJSON))
+                            {
+                                $file = file_get_contents($fieldsJSON);             //считываем файл
+                            }
                             $res=$strJSON->searhFieldToJSON($item[id],$file);   //поиск объекта по ID в JSON
 
                             if($res!=true)
