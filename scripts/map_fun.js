@@ -24,15 +24,15 @@ function initMap(){
 
     //Слушаем событие клик по карте
     map.on('click', function(evt) {
-        $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
+        $(elementPopup).popover('destroy');                 //скрыть выплывающее окно над маркером
 
-        //если выбран контроллер "выбрать"
+        //если выбран контроллер "ручной выбор"
         if(document.getElementById('checkSelect').checked) {
-            showInfoPopup(evt);                    //отобрразить всплывающее окно при клике по объекту
+            showInfoPopup(evt);                             //отобрразить всплывающее окно при клике по объекту
         }
 
         //если выбран контроллер "Маркер" (получаем координаты, добавляем маркер)
-        /*if(document.getElementById('markerToggle').checked){
+        /*if(document.getElementById('checkMarker').checked){
             var hdms = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
             posX=hdms[0];   //долгота
             posY=hdms[1];   //широта
@@ -43,9 +43,9 @@ function initMap(){
     //Слушаем событие вождения мыщью по карте
     map.on("pointermove", function (evt){
 
-        //если выбран контроллер "выбрать" или "редактировать"
+        //если выбран контроллер "ручной выбор"
         if(document.getElementById('checkSelect').checked){
-            changeCursor(evt);          //Изменение курсора при наведении на объект
+            changeCursor(evt);                              //Изменение курсора при наведении на объект
         }
     });
 }
@@ -137,9 +137,10 @@ function showJSON(arr_polygon, arr_point){
         sourceDraw.addFeatures(geoJSON.readFeatures(arr_polygon)); //считываем данные из JSON в источник графики для векторного слоя
     }
     setStylePolygonFromJSON();
-    if(arr_point != null && arr_point != ""){
+
+    /*if(arr_point != null && arr_point != ""){
         getMarkerFromPoints(arr_point);
-    }
+    }*/
 }
 
 //Задаем стиль полигонов при загрузке из файла
@@ -232,7 +233,7 @@ function selectInteraction(select,feature){
         ft.push(feature);
     }
 
-   /* selectInter.on('select',function(evt){
+   /*selectInter.on('select',function(evt){
         var col;
         if(evt['selected'][0].get('color')===undefined){
             col=colorDefault;
@@ -254,21 +255,25 @@ function selectInteraction(select,feature){
 }
 
 //Редактирование полигонов
-function modifyInteraction(){
-    /*selectInter = new ol.interaction.Select({
-        wrapX: false
-    });*/
+function modifyInteraction(modify,feature){
     map.addInteraction(selectInter);
 
-    modifyInter = new ol.interaction.Modify({
-        features: selectInter.getFeatures()
-    });
+    if(feature===undefined) {
+        modify = new ol.interaction.Modify({
+            features: selectInter.getFeatures()
+        });
+    }
+    /*else{
+        modify = new ol.interaction.Modify({
+            features: feature
+        });
+    }*/
 
-    map.addInteraction(modifyInter);
+    map.addInteraction(modify);
 }
 
 //Добавляет маркер на карту по координатам
-function addMarker(posX,posY,description){
+/*function addMarker(posX,posY,description){
 
     if(description===undefined){
         description="Маркер";
@@ -309,7 +314,7 @@ function getMarkerFromPoints(arr_point){
             addMarker(coor[0],coor[1], description);
         }
     }
-}
+}*/
 
 //отобрразить всплывающее окно с информацией если кликнули по маркеру или полигону
 function showInfoPopup(evt){
@@ -394,11 +399,10 @@ function changeCursor(evt){
 
 //Добавить поле на карту
 function AddFieldToMap(id,number,description){
-
-    document.getElementById('divAdd').style.display='block';
-    document.getElementById('PanelFieldInfo').style.display='none';
+    showPanelOperation('divAdd');
     document.getElementById('labelAdd').innerText="Добавляем участок №"+number;
     document.getElementById('btnAddSave').disabled = true;
+
     clearAllInteraction();
 
     var color=document.getElementById('selectColor');
@@ -415,6 +419,7 @@ function AddFieldToMap(id,number,description){
 function SaveAddField(){
     document.getElementById('PanelFieldInfo').style.display='block';
     document.getElementById('divAdd').style.display='none';
+
     sendJSON(fieldsJSON);
     location.reload();
 }
@@ -441,7 +446,7 @@ function showOnCenter(id_feature,pup){
         mapView.setZoom(mapView.getZoom()-1);                                   //уменьшаем значение масштаба на 1 для смотрибельности
 
         //Выделение объекта
-        selectInteraction(selectInter,feature)
+        selectInteraction(selectInter,feature);
 
         //вывод всплывающего окна
         if(pup===true) {
@@ -466,24 +471,20 @@ function showOnCenter(id_feature,pup){
 
 //редактировать участок
 function modifyField(id,number){
-    document.getElementById('divModify').style.display='block';
-    document.getElementById('PanelFieldInfo').style.display='none';
+    showPanelOperation('divModify');
+
     document.getElementById('labelModify').innerText="Изменяем участок №"+number;
     $(elementPopup).popover('destroy');
-    //changeCursor(sourceDraw.getFeatureById(id));
+
     showOnCenter(id);
-
-    modifyInter = new ol.interaction.Modify({
-        features: selectInter.getFeatures()
-    });
-
-    map.addInteraction(modifyInter);
+    modifyInteraction(modifyInter);
 }
 
 //сохранить изменения после редактирования
 function SaveModify(){
     document.getElementById('PanelFieldInfo').style.display='block';
     document.getElementById('divModify').style.display='none';
+
     clearAllInteraction();
     sendJSON(fieldsJSON);
 }
@@ -505,13 +506,91 @@ function cancelOperation(div){
 }
 
 //события выбора checkBox
-function checkBoxActive(box){
+function checkBoxSelectActive(box){
     if(box.checked){
         clearAllInteraction();                      //очищаем все взаимодействия
         selectInteraction(selectInter);
     }else{
         clearAllInteraction();                      //очищаем все взаимодействия
     }
+}
+
+//обработчик нажатия кнопки экспорт на панели
+function btnClickExport(){
+    showPanelOperation('divExport');
+    document.getElementById('labelExport').innerText="Экспорт карты в PDF формат. Выберете размер и качество";
+}
+
+//экспорт карты в PDF
+function exportPDF(){
+    var dims = {
+        a0: [1189, 841],
+        a1: [841, 594],
+        a2: [594, 420],
+        a3: [420, 297],
+        a4: [297, 210],
+        a5: [210, 148]
+    };
+
+    var loading = 0;
+    var loaded = 0;
+
+    var exportButton = document.getElementById('btnExport');
+    exportButton.disabled = true;
+
+    var format = document.getElementById('formatExport').value;
+    var resolution = document.getElementById('resolutionExport').value;
+    var dim = dims[format];                                                 //формат листа
+    var width = Math.round(dim[0] * resolution / 25.4);                     //задаем качество
+    var height = Math.round(dim[1] * resolution / 25.4);                    //экспортируемого изображения
+    var size = (map.getSize());                                             //получаем размер карты
+    var extent = map.getView().calculateExtent(size);                       //вычисляем экстенд
+
+    var source = OSMLayer.getSource();                                      //слой ресурсов
+
+    var tileLoadStart = function() {
+        ++loading;
+    };
+
+    var tileLoadEnd = function() {
+        ++loaded;
+        if (loading === loaded) {
+            var canvas = this;
+            window.setTimeout(function() {
+                loading = 0;
+                loaded = 0;
+                var data = canvas.toDataURL('image/png');
+                var pdf = new jsPDF('landscape', undefined, format);
+                pdf.addImage(data, 'JPEG', 0, 0, dim[0], dim[1]);
+                pdf.save('map.pdf');
+                source.un('tileloadstart', tileLoadStart);
+                source.un('tileloadend', tileLoadEnd, canvas);
+                source.un('tileloaderror', tileLoadEnd, canvas);
+                map.setSize(size);
+                map.getView().fit(extent, size);
+                map.renderSync();
+                exportButton.disabled = false;
+                document.body.style.cursor = 'auto';
+            }, 100);
+        }
+    };
+
+    map.once('postcompose', function(event) {
+        source.on('tileloadstart', tileLoadStart);
+        source.on('tileloadend', tileLoadEnd, event.context.canvas);
+        source.on('tileloaderror', tileLoadEnd, event.context.canvas);
+    });
+
+    map.setSize([width, height]);
+    map.getView().fit(extent, (map.getSize()));
+    map.renderSync();
+}
+
+//Отображение панели операций (отрисовка участка, редактирование, экспорт)
+function showPanelOperation(div){
+    document.getElementById(div).style.display='block';
+    document.getElementById('PanelFieldInfo').style.display='none';
+    $(elementPopup).popover('destroy');
 }
 
 

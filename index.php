@@ -52,16 +52,19 @@ if($_POST['item'] && $_POST['fileName']){
 
 <div class="row">
     <div class="col-xs-12">
-        <div id="map" class="map" style="height: 70%"><div id="popup" style="min-width: 300px;" title="информация"></div></div>
+        <div id="map" class="map" style="height: 70%"><div id="popup" style="min-width: 300px;" title="информация"></div></div><br>
 
+<!--Панель редактирования поля -->
         <div id="divModify" style="display: none">
             <label id="labelModify"></label><br>
             <div class="btn-group">
                 <input type="submit" value="Сохранить изменения" class="btn btn-default btn-xs" onclick="SaveModify()"/>
                 <input type="submit" value="Отмена" class="btn btn-default btn-xs" onclick="cancelOperation('divModify')"/>
             </div>
-        </div><br>
+        </div>
+<!-- END Панель редактирования поля -->
 
+<!--Панель добавления поля -->
         <div id="divAdd" style="display: none">
             <label id="labelAdd"></label><br>
 
@@ -80,13 +83,51 @@ if($_POST['item'] && $_POST['fileName']){
                 <input type="submit" id="btnAddSave" value="Сохранить изменения" class="btn btn-default btn-xs" onclick="SaveAddField()"/>
                 <input type="submit" value="Отмена" class="btn btn-default btn-xs" onclick="cancelOperation('divAdd')"/>
             </div>
-        </div><br>
+        </div>
+<!-- END Панель добавления поля  -->
 
-        <div class="panel panel-primary" id="PanelFieldInfo">
+<!--Панель экспорта-->
+        <div id="divExport" style="display: none">
+            <label id="labelExport"></label><br>
+
+            <form class="form">
+                <label>Размер листа</label>
+                <select id="formatExport">
+                    <option value="a0">A0 (долго)</option>
+                    <option value="a1">A1</option>
+                    <option value="a2">A2</option>
+                    <option value="a3">A3</option>
+                    <option value="a4" selected>A4</option>
+                    <option value="a5">A5 (быстро)</option>
+                </select>
+                <label>Качество</label>
+                <select id="resolutionExport">
+                    <option value="72">72 dpi (быстро)</option>
+                    <option value="150">150 dpi</option>
+                    <option value="300">300 dpi (долго)</option>
+                </select>
+            </form>
+
+            <div class="btn-group">
+                <input type="submit" value="Экспорт" id="btnExport" class="btn btn-default btn-xs" onclick="exportPDF()"/>
+                <input type="submit" value="Отмена" class="btn btn-default btn-xs" onclick="cancelOperation('divExport')"/>
+            </div>
+        </div>
+<!--END Панель экспорта-->
+
+        <div id="PanelFieldInfo">
+<!--Инструменты-->
+        <div class="alert alert-info" role="alert">
+            <b><input type="checkbox" id="checkSelect" onclick="checkBoxSelectActive(this)">Ручной выбор<b> |
+            <input type="submit" value="Экспорнт в PDF" class="btn btn-default btn-xs" onclick="btnClickExport()"/> |
+        </div>
+<!--END Инструменты-->
+
+<!--Список полей-->
+        <div class="panel panel-primary">
             <div class="panel-heading">
                 <h3 class="panel-title">
-                    Список полей в базе <br>
-                    <input type="checkbox" id="checkSelect" onclick="checkBoxActive(this)">Ручной выбор
+                    Список полей
                 </h3>
             </div>
             <div class="panel-body">
@@ -128,6 +169,9 @@ if($_POST['item'] && $_POST['fileName']){
                 } ?>
             </div>
         </div>
+<!-- END Список полей-->
+        </div>
+
 
     </div>
 
@@ -140,5 +184,6 @@ if($_POST['item'] && $_POST['fileName']){
 <script src="scripts/bootstrap.js" type="text/javascript" charset="utf-8"></script>
 <script src="scripts/map_fun.js" type="text/javascript" charset="utf-8"></script>
 <script src="scripts/ol3-layerswitcher.js" type="text/javascript" charset="utf-8"></script>
+<script src="scripts/jspdf.min.js" type="text/javascript" charset="utf-8"></script>
 
 </html>
