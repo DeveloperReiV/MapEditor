@@ -7,12 +7,15 @@ var elementPopup=document.getElementById('popup');                      //div к
 var drawInter = null;                                             //тип взаимодействия "рисование"
 var selectInter = new ol.interaction.Select();                    //тип взаимодействия "выделить (выбрать)"
 var modifyInter = null;                                           //тип взаимодействия "модификация"
+var selectModify = new ol.interaction.Select();
 
 //источник графики для векторного слоя
 var sourceDraw = new ol.source.Vector({
     wrapX: false,
     format: geoJSON
 });
+
+
 
 
 //нициализация карты при загрузке страницы
@@ -237,26 +240,21 @@ function drawInteraction(hand,id,number,description,color){
 }
 
 //Быбор элемента на карте
-function selectInteraction(select,feature){
+function selectInteraction(){
 
-    if (select !== null) {
-        map.addInteraction(select);     //выбор объекта (реализуем взаимодействие)
+    if (selectInter !== null) {
+        map.addInteraction(selectInter);     //выбор объекта (реализуем взаимодействие)
     }
 
-    if(feature!==undefined){
-        //var event=new ol.events.condition.always;
-
-        //select.set('condition', event);
-
+    /*if(feature!==undefined){
         var ft=select.getFeatures({
             wrapX: false
         });
-        ft.clear();
+        //ft.clear();
         ft.push(feature);
         setStyleSelect(feature);
-
-        //select.dispatchEvent('select');
-    }
+        select.dispatchEvent('select');
+    }*/
 
     //событие "выделение объекта по клику"
     selectInter.on('select',function(evt){
@@ -277,21 +275,13 @@ function selectInteraction(select,feature){
 }
 
 //Редактирование полигонов
-function modifyInteraction(modify,feature){
-    map.addInteraction(selectInter);
+function modifyInteraction(){
+    map.addInteraction(selectModify);
 
-    if(feature===undefined) {
-        modify = new ol.interaction.Modify({
-            features: selectInter.getFeatures()
+    modifyInter = new ol.interaction.Modify({
+            features: selectModify.getFeatures()
         });
-    }
-    /*else{
-        modify = new ol.interaction.Modify({
-            features: feature
-        });
-    }*/
-
-    map.addInteraction(modify);
+    map.addInteraction(modifyInter);
 }
 
 //Добавляет маркер на карту по координатам
@@ -399,6 +389,7 @@ function clearAllInteraction(){
     map.removeInteraction(drawInter);
     map.removeInteraction(selectInter);
     map.removeInteraction(modifyInter);
+    map.removeInteraction(selectModify);
     $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
 }
 
@@ -460,6 +451,15 @@ function showOnCenter(id_feature,pup){
     map.removeInteraction(selectInter);
 
     if(feature!=null){
+
+        //Выделение объекта
+        var ft = selectModify.getFeatures({
+            wrapX: false
+        });
+        ft.push(feature);
+        setStyleSelect(feature);
+
+
         var extent = feature.getGeometry().getExtent();                         //получаем предатавление объекта (набор координат)
         var coordinates = feature.getGeometry().getCoordinates();               //получаем координаты
 
@@ -483,16 +483,12 @@ function showOnCenter(id_feature,pup){
         }else {
             $(elementPopup).popover('destroy');
         }
+
+        map.on('click',function(){
+            setStyle(feature);
+            map.removeInteraction(selectModify);
+        })
     }
-
-    //Выделение объекта
-    selectInteraction(selectInter,feature);
-
-    map.on('click',function(){
-        setStyle(feature);
-        map.removeInteraction(selectInter);
-
-    })
 }
 
 //редактировать участок
@@ -503,7 +499,7 @@ function modifyField(id,number){
     $(elementPopup).popover('destroy');
 
     showOnCenter(id);
-    modifyInteraction(modifyInter);
+    modifyInteraction();
 }
 
 //сохранить изменения после редактирования
@@ -536,7 +532,7 @@ function cancelOperation(div){
 function checkBoxSelectActive(box){
     if(box.checked){
         clearAllInteraction();                      //очищаем все взаимодействия
-        selectInteraction(selectInter);
+        selectInteraction();
     }else{
         clearAllInteraction();                      //очищаем все взаимодействия
     }
