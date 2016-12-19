@@ -7,7 +7,6 @@ var elementPopup=document.getElementById('popup');                      //div к
 var drawInter = null;                                             //тип взаимодействия "рисование"
 var selectInter = new ol.interaction.Select();                    //тип взаимодействия "выделить (выбрать)"
 var modifyInter = null;                                           //тип взаимодействия "модификация"
-//var colorDefault=[173,216,230,.5];
 
 //источник графики для векторного слоя
 var sourceDraw = new ol.source.Vector({
@@ -21,8 +20,6 @@ function initMap(){
     createMAP();                                            //создаем карту
     addControlToMap();                                      //добавляем контроллеры управления
     createPopup();                                          //зоздаем всплывающие окно для вывода информации
-    //document.getElementById('noneToggle').checked = true;   //по умолчанию выбран инструмент "навигация"
-
     showJSON(arr_polygon_2, arr_point_2);
 
     //Слушаем событие клик по карте
@@ -30,24 +27,24 @@ function initMap(){
         $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
 
         //если выбран контроллер "выбрать"
-        if(document.getElementById('selectToggle').checked || document.getElementById('checkSelect').checked) {
+        if(document.getElementById('checkSelect').checked) {
             showInfoPopup(evt);                    //отобрразить всплывающее окно при клике по объекту
         }
 
         //если выбран контроллер "Маркер" (получаем координаты, добавляем маркер)
-        if(document.getElementById('markerToggle').checked){
+        /*if(document.getElementById('markerToggle').checked){
             var hdms = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
             posX=hdms[0];   //долгота
             posY=hdms[1];   //широта
             addMarker(posX,posY);   //добавляем маркер
-        }
+        }*/
     });
 
     //Слушаем событие вождения мыщью по карте
     map.on("pointermove", function (evt){
 
         //если выбран контроллер "выбрать" или "редактировать"
-        if(document.getElementById('selectToggle').checked || document.getElementById('modifyToggle').checked || document.getElementById('checkSelect').checked){
+        if(document.getElementById('checkSelect').checked){
             changeCursor(evt);          //Изменение курсора при наведении на объект
         }
     });
@@ -156,8 +153,6 @@ function setStylePolygonFromJSON(){
 
             if(color!==undefined && number!==undefined) {
                 style(features[i], color,number);
-            }else{
-                //style(features[i], colorDefault,null);
             }
         }
     }
@@ -396,45 +391,6 @@ function changeCursor(evt){
         jTarget.css("cursor", "");
     }
 }
-
-//Выбор контроллера "навигация"
-document.getElementById('noneToggle').onchange = function(){
-    clearAllInteraction();                      //очищаем все взаимодействия
-};
-
-//выбор контроллера "полигон"
-document.getElementById('polygonToggle').onchange = function(){
-    clearAllInteraction();                      //очищаем все взаимодействия
-    drawInteraction();
-};
-
-//выбор контроллера "полигон от руки"
-document.getElementById('polygonToggleHand').onchange = function(){
-    clearAllInteraction();                      //очищаем все взаимодействия
-    drawInteraction(true);
-};
-
-//Выбор контроллера "Редактировать"
-document.getElementById('modifyToggle').onchange = function(){
-    clearAllInteraction();                      //очищаем все взаимодействия
-    modifyInteraction();
-};
-
-//Выбор котроллера "выбрать"
-document.getElementById('selectToggle').onchange = function(){
-    clearAllInteraction();                      //очищаем все взаимодействия
-    selectInteraction(selectInter);
-};
-
-//Выбор контроллера "Маркер"
-document.getElementById('markerToggle').onchange = function(){
-    clearAllInteraction();                      //очищаем все взаимодействия
-};
-
-//Выбор любого контроллера
-document.getElementById('controlToggle').onchange = function(){
-    $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
-};
 
 //Добавить поле на карту
 function AddFieldToMap(id,number,description){
