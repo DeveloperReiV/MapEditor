@@ -118,7 +118,7 @@ if($_POST['item'] && $_POST['fileName']){
         <div id="PanelFieldInfo">
 <!--Инструменты-->
         <div class="alert alert-info" role="alert">
-            <b><input type="checkbox" id="checkSelect" onclick="checkBoxSelectActive(this)">Ручной выбор<b> |
+            <b><input type="checkbox" id="checkSelect"  onclick="checkBoxSelectActive(this)">Ручной выбор<b> |
             <input type="submit" value="Экспорнт в PDF" class="btn btn-default btn-xs" onclick="btnClickExport()"/> |
         </div>
 <!--END Инструменты-->

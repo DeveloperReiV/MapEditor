@@ -138,9 +138,9 @@ function showJSON(arr_polygon, arr_point){
     }
     setStylePolygonFromJSON();
 
-    /*if(arr_point != null && arr_point != ""){
-        getMarkerFromPoints(arr_point);
-    }*/
+    if(arr_point != null && arr_point != ""){
+        //getMarkerFromPoints(arr_point);
+    }
 }
 
 //Задаем стиль полигонов при загрузке из файла
@@ -149,18 +149,13 @@ function setStylePolygonFromJSON(){
 
     for(var i=0;i<features.length;i++){
         if(features[i].get('name')==='Polygon') {
-            var color = features[i].get("color");
-            var number = features[i].get("number");
-
-            if(color!==undefined && number!==undefined) {
-                style(features[i], color,number);
-            }
+            setStyle(features[i]);
         }
     }
 }
 
 //задать стиль
-function style(feature,color,number){
+function setStyle(feature){
     feature.setStyle(
         new ol.style.Style({
             stroke: new ol.style.Stroke({
@@ -168,13 +163,34 @@ function style(feature,color,number){
                 width: 3
             }),
             fill: new ol.style.Fill({
-                color: color
+                color: feature.get('color')
             }),
             text: new ol.style.Text({
-                text:number,
+                text: feature.get('number'),
                 scale: 1.5
             })
         }))
+}
+
+//Стиль при выделении
+function setStyleSelect(feature){
+    var selected = selectInter.getFeatures().getArray().indexOf(feature) >= 0;
+
+    feature.setStyle(
+        new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: '#00BFFF',
+                width: 5
+            }),
+            fill: new ol.style.Fill({
+                color: feature.get('color')
+            }),
+            text: new ol.style.Text({
+                text: feature.get('number'),
+                scale: 1.5
+            })
+        })
+    );
 }
 
 //Функция рисования (полигон)
@@ -222,36 +238,42 @@ function drawInteraction(hand,id,number,description,color){
 
 //Быбор элемента на карте
 function selectInteraction(select,feature){
+
     if (select !== null) {
-        map.addInteraction(selectInter);     //выбор объекта (реализуем взаимодействие)
+        map.addInteraction(select);     //выбор объекта (реализуем взаимодействие)
     }
 
     if(feature!==undefined){
+        //var event=new ol.events.condition.always;
+
+        //select.set('condition', event);
+
         var ft=select.getFeatures({
             wrapX: false
         });
+        ft.clear();
         ft.push(feature);
+        setStyleSelect(feature);
+
+        //select.dispatchEvent('select');
     }
 
-   /*selectInter.on('select',function(evt){
-        var col;
-        if(evt['selected'][0].get('color')===undefined){
-            col=colorDefault;
-        }else{
-            col=evt['selected'][0].get('color');
+    //событие "выделение объекта по клику"
+    selectInter.on('select',function(evt){
+        //задаем стиль выделенного объекта
+        if (evt.selected.length) {
+            evt.selected.forEach(function(feature){
+                setStyleSelect(feature);
+            });
         }
 
-        var styleSelect = new ol.style.Style({
-            stroke: new ol.style.Stroke({
-                color: '#00BFFF',
-                width: 5
-            }),
-            fill: new ol.style.Fill({
-                color: col
-            })
-        });
-        evt['selected'][0].setStyle(styleSelect);
-    });*/
+        //задаем стиль объекту с которого снят выбор
+        if (evt.deselected.length) {
+            evt.deselected.forEach(function(feature){
+                setStyle(feature);
+            });
+        }
+    });
 }
 
 //Редактирование полигонов
@@ -427,17 +449,19 @@ function SaveAddField(){
 //центрировать карту по координатам объекта с id
 //вывести выплывающие окно с информацией и выделить объект
 function showOnCenter(id_feature,pup){
+    document.getElementById('checkSelect').checked=false;
+
     if(pup===undefined){
         pup=false;
     }
     $(elementPopup).popover('destroy');
 
-    var feature=sourceDraw.getFeatureById(id_feature);                  //получаем объект по ID
+    var feature=sourceDraw.getFeatureById(id_feature);                          //получаем объект по ID
     map.removeInteraction(selectInter);
 
     if(feature!=null){
-        var extent = feature.getGeometry().getExtent();                 //получаем предатавление объекта (набор координат)
-        var coordinates = feature.getGeometry().getCoordinates();       //получаем координаты
+        var extent = feature.getGeometry().getExtent();                         //получаем предатавление объекта (набор координат)
+        var coordinates = feature.getGeometry().getCoordinates();               //получаем координаты
 
         var pan = ol.animation.pan({ source: mapView.getCenter()});             //анимированный переход при изменении центра
         var zoom = ol.animation.zoom({ resolution: mapView.getResolution()});   //анимированный переход при изменении масштаба
@@ -445,18 +469,15 @@ function showOnCenter(id_feature,pup){
         mapView.fit(extent, map.getSize());                                     //устанавливаем геометрию просмотра
         mapView.setZoom(mapView.getZoom()-1);                                   //уменьшаем значение масштаба на 1 для смотрибельности
 
-        //Выделение объекта
-        selectInteraction(selectInter,feature);
-
         //вывод всплывающего окна
         if(pup===true) {
             popup.setOffset([0, 0]);
-            popup.setPosition(getCoordinatesMaxY(coordinates[0]));      //установка положения для всплывающего окна
+            popup.setPosition(getCoordinatesMaxY(coordinates[0]));              //установка положения для всплывающего окна
             var content = "Номер: " + feature.get('number') + "<br>" + "Описание: " + feature.get('description');
-            $(elementPopup).popover({                                   //открываем окно
-                'placement': 'top',                                     //Расположение окна
+            $(elementPopup).popover({                                           //открываем окно
+                'placement': 'top',                                             //Расположение окна
                 'html': true,
-                'content': content                                      //содержимое
+                'content': content                                              //содержимое
             });
             $(elementPopup).popover('show');
         }else {
@@ -464,8 +485,13 @@ function showOnCenter(id_feature,pup){
         }
     }
 
+    //Выделение объекта
+    selectInteraction(selectInter,feature);
+
     map.on('click',function(){
+        setStyle(feature);
         map.removeInteraction(selectInter);
+
     })
 }
 
@@ -503,6 +529,7 @@ function cancelOperation(div){
     document.getElementById('PanelFieldInfo').style.display='block';
     document.getElementById(div).style.display='none';
     clearAllInteraction();
+    location.reload();
 }
 
 //события выбора checkBox
@@ -536,7 +563,7 @@ function exportPDF(){
     var loaded = 0;
 
     var exportButton = document.getElementById('btnExport');
-    exportButton.disabled = true;
+    exportButton.disabled = true;                                           //делаем кнопку неактивной
 
     var format = document.getElementById('formatExport').value;
     var resolution = document.getElementById('resolutionExport').value;
@@ -555,26 +582,31 @@ function exportPDF(){
     var tileLoadEnd = function() {
         ++loaded;
         if (loading === loaded) {
-            var canvas = this;
+            var canvas = this;                                              //текущий фрагмент карты
+
+            //выполнить один раз
             window.setTimeout(function() {
                 loading = 0;
                 loaded = 0;
                 var data = canvas.toDataURL('image/png');
                 var pdf = new jsPDF('landscape', undefined, format);
-                pdf.addImage(data, 'JPEG', 0, 0, dim[0], dim[1]);
-                pdf.save('map.pdf');
-                source.un('tileloadstart', tileLoadStart);
-                source.un('tileloadend', tileLoadEnd, canvas);
-                source.un('tileloaderror', tileLoadEnd, canvas);
-                map.setSize(size);
-                map.getView().fit(extent, size);
-                map.renderSync();
-                exportButton.disabled = false;
-                document.body.style.cursor = 'auto';
+                pdf.addImage(data, 'JPEG', 0, 0, dim[0], dim[1]);           //
+                pdf.save('map.pdf');                                        //имя сохраняемого файла
+
+                source.un('tileloadstart', tileLoadStart);                  //не слушаем
+                source.un('tileloadend', tileLoadEnd, canvas);              //следующие
+                source.un('tileloaderror', tileLoadEnd, canvas);            //события
+
+                map.setSize(size);                                          //задаем размер карты
+                map.getView().fit(extent, size);                            //устанавливаем экстенд и размер
+                map.renderSync();                                           //выполнить установки немедленно!!!
+                exportButton.disabled = false;                              //делаем кнопку активной
+                document.body.style.cursor = 'auto';                        //стандартный курсор
             }, 100);
         }
     };
 
+    //слушаем события один раз
     map.once('postcompose', function(event) {
         source.on('tileloadstart', tileLoadStart);
         source.on('tileloadend', tileLoadEnd, event.context.canvas);
