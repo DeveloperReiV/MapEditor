@@ -237,7 +237,7 @@ function selectInteraction(select,feature){
         ft.push(feature);
     }
 
-    /*selectInter.on('select',function(evt){
+   /* selectInter.on('select',function(evt){
         var col;
         if(evt['selected'][0].get('color')===undefined){
             col=colorDefault;
