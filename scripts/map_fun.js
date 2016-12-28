@@ -1,13 +1,16 @@
 var map, OSMLayer, mapView, drawLayer;                                  //слои карты
 var geoJSON = new ol.format.GeoJSON();                                  //экземпляр класса geoJSON
-var posX, posY;                                                         //координаты щелчка мыши
+//var posX, posY;                                                         //координаты щелчка мыши
 var popup;                                                              //всплывающие окно объект
+
 var elementPopup=document.getElementById('popup');                      //div контейнер всплывающее окно
+var contentPopup = document.getElementById('popup-content');
+var closerPopup = document.getElementById('popup-closer');
 
 var drawInter = null;                                             //тип взаимодействия "рисование"
 var selectInter = new ol.interaction.Select();                    //тип взаимодействия "выделить (выбрать)"
 var modifyInter = null;                                           //тип взаимодействия "модификация"
-var selectModify = new ol.interaction.Select();
+var selectCenter = new ol.interaction.Select();
 
 //источник графики для векторного слоя
 var sourceDraw = new ol.source.Vector({
@@ -27,7 +30,7 @@ function initMap(){
 
     //Слушаем событие клик по карте
     map.on('click', function(evt) {
-        $(elementPopup).popover('destroy');                 //скрыть выплывающее окно над маркером
+        closePopup();                                       //скрыть выплывающее окно над маркером
 
         //если выбран контроллер "ручной выбор"
         if(document.getElementById('checkSelect').checked) {
@@ -45,12 +48,16 @@ function initMap(){
 
     //Слушаем событие вождения мыщью по карте
     map.on("pointermove", function (evt){
-
         //если выбран контроллер "ручной выбор"
         if(document.getElementById('checkSelect').checked){
             changeCursor(evt);                              //Изменение курсора при наведении на объект
         }
     });
+
+    //закрытие всплывающего окна по нажатию ссылки
+    closerPopup.onclick = function() {
+        closePopup();
+    };
 }
 
 //создание карты со слоем OSM и графическим слоем
@@ -231,7 +238,7 @@ function drawInteraction(hand,id,number,description,color){
             color: color
         });
         evt.feature.setId(id);
-        style(evt.feature,color);
+        setStyle(evt.feature);
     });
 
     if (drawInter !== null) {
@@ -276,10 +283,9 @@ function selectInteraction(){
 
 //Редактирование полигонов
 function modifyInteraction(){
-    map.addInteraction(selectModify);
-
+    map.addInteraction(selectCenter);
     modifyInter = new ol.interaction.Modify({
-            features: selectModify.getFeatures()
+            features: selectCenter.getFeatures()
         });
     map.addInteraction(modifyInter);
 }
@@ -334,32 +340,36 @@ function showInfoPopup(evt){
     var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature){
             return feature;
         });
+    setDataPopup(feature);                  //установки и отображение всплывающего окна
 
-    //если объект не пуст (был клик по объекту)
+}
+
+//задает данные для всплывающего окна и отображает или не отображает его
+function setDataPopup(feature){
     if (feature){
         var coordinates = feature.getGeometry().getCoordinates();   //получаем координаты
-        var content;
         //если это маркер
         if(feature.get('name')=='Marker'){
             popup.setOffset([0,-45]);
             popup.setPosition(coordinates);                         //установка положения для всплывающего окна
-            content=feature.get('description');
+            contentPopup.innerHTML=feature.get('description');
         }
         //если это полигон
         if(feature.get('name')=='Polygon'){
             popup.setOffset([0,0]);
             popup.setPosition(getCoordinatesMaxY(coordinates[0]));  //установка положения для всплывающего окна
-            content="Номер: "+feature.get('number')+"<br>"+"Описание: "+feature.get('description');
+            contentPopup.innerHTML="Номер: "+feature.get('number')+"<br>"+"Описание: "+feature.get('description');
+            contentPopup.innerHTML+="<br><br><a href='' >покзать информацию</a>";
         }
 
         $(elementPopup).popover({                                   //открываем окно
-            placement: 'top',                                     //расположение окна
-            html: true,
-            content: content                                      //содержимое
+            placement: 'top',                                       //расположение окна
+            html: true
         });
         $(elementPopup).popover('show');
     } else {
         $(elementPopup).popover('destroy');
+        closePopup();
     }
 }
 
@@ -368,9 +378,19 @@ function createPopup(){
     popup = new ol.Overlay({
         element: elementPopup,
         positioning: 'bottom-center',
-        stopEvent: false,
+        autoPan: true,
+        autoPanAnimation: {
+            duration: 250
+        }
     });
     map.addOverlay(popup);
+}
+
+//закрыть всплывающее окно
+function closePopup(){
+    popup.setPosition(undefined);
+    closerPopup.blur();
+    return false;
 }
 
 //вернуть из массива координат пару координат с максимальным значением по оси Y
@@ -389,8 +409,9 @@ function clearAllInteraction(){
     map.removeInteraction(drawInter);
     map.removeInteraction(selectInter);
     map.removeInteraction(modifyInter);
-    map.removeInteraction(selectModify);
+    map.removeInteraction(selectCenter);
     $(elementPopup).popover('destroy');         //скрыть выплывающее окно над маркером
+    closePopup();
 }
 
 //Изменить курсор
@@ -445,7 +466,7 @@ function showOnCenter(id_feature,pup){
     if(pup===undefined){
         pup=false;
     }
-    $(elementPopup).popover('destroy');
+    closePopup();
 
     var feature=sourceDraw.getFeatureById(id_feature);                          //получаем объект по ID
     map.removeInteraction(selectInter);
@@ -453,15 +474,20 @@ function showOnCenter(id_feature,pup){
     if(feature!=null){
 
         //Выделение объекта
-        var ft = selectModify.getFeatures({
+        var ft = selectCenter.getFeatures({                                     //коллекция элементов select
             wrapX: false
         });
-        ft.push(feature);
-        setStyleSelect(feature);
-
+        var array=ft.getArray();                                                //массив элментов из коллекции
+        for(var i=0; i<array.length; i++){
+            var idd=array[i]['f'];                                              //идендификатор элемента коллекции
+            var feat=sourceDraw.getFeatureById(idd);                            //получаем объект
+            ft.pop(feat);                                                       //выталкиваем из набора выделенных
+            setStyle(feat);                                                     //задаем стиль
+        }
+        ft.push(feature);                                                       //добавляем текущий элемент в набор выделенных
+        setStyleSelect(feature);                                                //задаем стиль
 
         var extent = feature.getGeometry().getExtent();                         //получаем предатавление объекта (набор координат)
-        var coordinates = feature.getGeometry().getCoordinates();               //получаем координаты
 
         var pan = ol.animation.pan({ source: mapView.getCenter()});             //анимированный переход при изменении центра
         var zoom = ol.animation.zoom({ resolution: mapView.getResolution()});   //анимированный переход при изменении масштаба
@@ -471,22 +497,15 @@ function showOnCenter(id_feature,pup){
 
         //вывод всплывающего окна
         if(pup===true) {
-            popup.setOffset([0, 0]);
-            popup.setPosition(getCoordinatesMaxY(coordinates[0]));              //установка положения для всплывающего окна
-            var content = "Номер: " + feature.get('number') + "<br>" + "Описание: " + feature.get('description');
-            $(elementPopup).popover({                                           //открываем окно
-                'placement': 'top',                                             //Расположение окна
-                'html': true,
-                'content': content                                              //содержимое
-            });
-            $(elementPopup).popover('show');
+            setDataPopup(feature);                                              //всплывающее окно
         }else {
             $(elementPopup).popover('destroy');
+            closePopup();
         }
 
         map.on('click',function(){
             setStyle(feature);
-            map.removeInteraction(selectModify);
+            map.removeInteraction(selectCenter);
         })
     }
 }
@@ -496,7 +515,7 @@ function modifyField(id,number){
     showPanelOperation('divModify');
 
     document.getElementById('labelModify').innerText="Изменяем участок №"+number;
-    $(elementPopup).popover('destroy');
+    closePopup();
 
     showOnCenter(id);
     modifyInteraction();
@@ -618,7 +637,7 @@ function exportPDF(){
 function showPanelOperation(div){
     document.getElementById(div).style.display='block';
     document.getElementById('PanelFieldInfo').style.display='none';
-    $(elementPopup).popover('destroy');
+    closePopup();
 }
 
 

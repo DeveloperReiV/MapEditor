@@ -52,7 +52,12 @@ if($_POST['item'] && $_POST['fileName']){
 
 <div class="row">
     <div class="col-xs-12">
-        <div id="map" class="map" style="height: 70%"><div id="popup" style="min-width: 300px;" title="информация"></div></div><br>
+        <div id="map" class="map" style="height: 70%">
+            <div id="popup" class="ol-popup">
+                <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                <div id="popup-content"></div>
+            </div>
+        </div><br>
 
 <!--Панель редактирования поля -->
         <div id="divModify" style="display: none">
