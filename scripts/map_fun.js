@@ -4,13 +4,13 @@ var geoJSON = new ol.format.GeoJSON();                                  //экз
 var popup;                                                              //всплывающие окно объект
 
 var elementPopup=document.getElementById('popup');                      //div контейнер всплывающее окно
-var contentPopup = document.getElementById('popup-content');
-var closerPopup = document.getElementById('popup-closer');
+var contentPopup = document.getElementById('popup-content');            //div контейнер содержимое всплывающего окна
+var closerPopup = document.getElementById('popup-closer');              //значек закрыть всплывающее окно
 
-var drawInter = null;                                             //тип взаимодействия "рисование"
-var selectInter = new ol.interaction.Select();                    //тип взаимодействия "выделить (выбрать)"
-var modifyInter = null;                                           //тип взаимодействия "модификация"
-var selectCenter = new ol.interaction.Select();
+var drawInter = null;                                                   //тип взаимодействия "рисование"
+var selectInter = new ol.interaction.Select();                          //тип взаимодействия "выделить (выбрать)"
+var modifyInter = null;                                                 //тип взаимодействия "модификация"
+var selectCenter = new ol.interaction.Select();                         //тип взаимодействия "выделить (выбрать)" для программного выделения
 
 //источник графики для векторного слоя
 var sourceDraw = new ol.source.Vector({
@@ -359,7 +359,7 @@ function setDataPopup(feature){
             popup.setOffset([0,0]);
             popup.setPosition(getCoordinatesMaxY(coordinates[0]));  //установка положения для всплывающего окна
             contentPopup.innerHTML="Номер: "+feature.get('number')+"<br>"+"Описание: "+feature.get('description');
-            contentPopup.innerHTML+="<br><br><a href='' >покзать информацию</a>";
+            contentPopup.innerHTML+="<br><br><input type='submit' id='btnPopINFO' value='информация' class='btn btn-default btn-xs'/>";
         }
 
         $(elementPopup).popover({                                   //открываем окно
@@ -367,6 +367,11 @@ function setDataPopup(feature){
             html: true
         });
         $(elementPopup).popover('show');
+
+        document.getElementById('btnPopINFO').onclick=function(){
+            showInfoField(feature);
+        }
+
     } else {
         $(elementPopup).popover('destroy');
         closePopup();
@@ -391,6 +396,20 @@ function closePopup(){
     popup.setPosition(undefined);
     closerPopup.blur();
     return false;
+}
+
+function showInfoField(feature){
+    //отправляем данные методом POST php обработчику в index.php
+    if(feature != null) {
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: 'index.php',
+            data: {
+                fID: feature.getId()
+            }
+        });
+    }
 }
 
 //вернуть из массива координат пару координат с максимальным значением по оси Y

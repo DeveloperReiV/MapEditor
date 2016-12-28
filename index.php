@@ -4,14 +4,13 @@ require_once('lib/strJSON.php');
 require_once('lib/fnXML.php');
 
 $fieldsJSON="lib/fields.json";
-
 $fileXML="lib/dataXML.xml";
 
 
 $strJSON=new strJSON();
 $XML=new fnXML();
 
-$strXML=$XML->getXMLstring($fileXML);           //Получаем XML строку из файла
+$strXML=$XML->getXMLstring($fileXML);               //Получаем XML строку из файла
 
 if(file_exists($fieldsJSON)){
     $file = file_get_contents($fieldsJSON);         //считываем файл
@@ -24,6 +23,15 @@ if($_POST['item'] && $_POST['fileName']){
     $json=$_POST['item'];                       //данные
     $fileName=$_POST['fileName'];               //имя файла
     file_put_contents($fileName,$json);         //записываем в файл
+}
+
+if($_POST['fID']){
+    $strXML=$XML->getFieldToID($fileXML,$_POST['fID']);
+}
+
+function generateCatalog($template,$xml)
+{
+    include 'lib/'.$template;
 }
 
 ?>
@@ -136,42 +144,7 @@ if($_POST['item'] && $_POST['fileName']){
                 </h3>
             </div>
             <div class="panel-body">
-                <? if($strXML){
-                    foreach($strXML->fields[0] as $item)
-                    {
-                    ?>
-                        <div class="alert alert-info">
-                            <strong>ID:       </strong><?=$item[id]?><br>
-                            <strong>Номер:    </strong><?=$item->number?><br>
-                            <strong>Описание: </strong><?=$item->description?><br><br>
-                            <?
-                            if(file_exists($fieldsJSON))
-                            {
-                                $file = file_get_contents($fieldsJSON);             //считываем файл
-                            }
-                            $res=$strJSON->searhFieldToJSON($item[id],$file);   //поиск объекта по ID в JSON
-
-                            if($res!=true)
-                            {
-                            ?>
-                                <input type="submit" value="Нарисовать на карте" class="btn btn-default btn-xs" onclick="AddFieldToMap('<? echo $item[id]?>','<? echo $item->number?>','<? echo $item->description?>')"/>
-                            <?
-                            }
-                            else
-                            {
-                            ?>
-                            <div class="btn-group">
-                                <input type="submit" value="Показать" class="btn btn-default btn-xs" onclick="showOnCenter('<? echo $item[id]?>',true)"/>
-                                <input type="submit" value="Редактировать" class="btn btn-default btn-xs" onclick="modifyField('<? echo $item[id]?>','<? echo $item->number?>')"/>
-                                <input type="submit" value="Удалить" class="btn btn-default btn-xs" onclick="deleteField('<? echo $item[id]?>')"/>
-                            </div>
-                            <?
-                            }
-                            ?>
-                        </div>
-                    <?
-                    }
-                } ?>
+                <? generateCatalog('catFields.php',$strXML); ?>
             </div>
         </div>
 <!-- END Список полей-->
