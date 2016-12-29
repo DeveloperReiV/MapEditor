@@ -118,19 +118,19 @@ function generateCatalog($template,$xml)
 
             <form class="form">
                 <label>Размер листа</label>
-                <select id="formatExport">
-                    <option value="a0">A0 (долго)</option>
+                <select id="formatExport" style="width: 100px">
+                    <option value="a0">A0</option>
                     <option value="a1">A1</option>
                     <option value="a2">A2</option>
                     <option value="a3">A3</option>
                     <option value="a4" selected>A4</option>
-                    <option value="a5">A5 (быстро)</option>
+                    <option value="a5">A5</option>
                 </select>
                 <label>Качество</label>
-                <select id="resolutionExport">
-                    <option value="72">72 dpi (быстро)</option>
+                <select id="resolutionExport" style="width: 100px">
+                    <option value="72">72 dpi</option>
                     <option value="150">150 dpi</option>
-                    <option value="300">300 dpi (долго)</option>
+                    <option value="300">300 dpi</option>
                 </select>
             </form>
 

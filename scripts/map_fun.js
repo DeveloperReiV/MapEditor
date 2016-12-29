@@ -368,8 +368,13 @@ function setDataPopup(feature){
             popup.setOffset([0,0]);
             popup.setPosition(getCoordinatesMaxY(coordinates[0]));  //установка положения для всплывающего окна
             contentPopup.innerHTML="Номер: "+feature.get('number')+"<br>"+"Описание: "+feature.get('description');
+
             window.id=feature.getId();
-            contentPopup.innerHTML+="<br><br><a href='?fID="+window.id+"' class='btn btn-default btn-xs'>информация</a>";
+            window.number=feature.get('number');
+
+            contentPopup.innerHTML+="<br><br><a href='?fID="+window.id+"'class='btn btn-default btn-xs'>Информация</a>";
+            contentPopup.innerHTML+="<input type='submit' value='Редактировать' class='btn btn-default btn-xs' onclick=\"modifyField(window.id,window.number)\"/>";
+            contentPopup.innerHTML+="<input type='submit' value='Удалить' class='btn btn-default btn-xs' onclick=\"deleteField(window.id)\"/>";
         }
         $(elementPopup).popover({                                   //открываем окно
             placement: 'top',                                       //расположение окна
@@ -450,12 +455,17 @@ function AddFieldToMap(id,number,description){
 
     var color=document.getElementById('selectColor');
     var transparency=document.getElementById('selectTransparency');
+    transparency.disabled=true;
 
 
     color.onchange=function() {
+        transparency.disabled=false;
+        color.disabled=true;
         transparency.onchange=function(){
             if (color.value !== null && transparency.value != null) {
                 document.getElementById('btnAddSave').disabled = false;
+                transparency.disabled=true;
+
                 drawInteraction(false, id, number, description, color.value, transparency.value);
             }
         }
@@ -595,6 +605,7 @@ function exportPDF(){
 
     var format = document.getElementById('formatExport').value;
     var resolution = document.getElementById('resolutionExport').value;
+
     var dim = dims[format];                                                 //формат листа
     var width = Math.round(dim[0] * resolution / 25.4);                     //задаем качество
     var height = Math.round(dim[1] * resolution / 25.4);                    //экспортируемого изображения
@@ -632,6 +643,9 @@ function exportPDF(){
                 document.body.style.cursor = 'auto';                        //стандартный курсор
             }, 100);
         }
+
+        //document.getElementById('PanelFieldInfo').style.display='block';
+        //document.getElementById('divExport').style.display='none';
     };
 
     //слушаем события один раз
@@ -644,6 +658,8 @@ function exportPDF(){
     map.setSize([width, height]);
     map.getView().fit(extent, (map.getSize()));
     map.renderSync();
+
+
 }
 
 //Отображение панели операций (отрисовка участка, редактирование, экспорт)
@@ -653,7 +669,7 @@ function showPanelOperation(div){
     closePopup();
 }
 
-//получаем массив RGB
+//получаем массив RGB+прозрачнасть
 function settingColor(color, transparency){
     color=color.slice(1,color.length-1);
     var mas=color.split(',');
