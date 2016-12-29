@@ -16,7 +16,10 @@
     border: 1px solid #cccccc;
     bottom: 12px;
     left: -50px;
+    margin:auto;
     min-width: 280px;
+    float: right;
+
 }
 .ol-popup:after, .ol-popup:before {
     top: 100%;

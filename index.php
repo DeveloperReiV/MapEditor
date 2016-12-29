@@ -1,4 +1,5 @@
 <?php
+session_start();
 mb_internal_encoding("UTF-8");
 require_once('lib/strJSON.php');
 require_once('lib/fnXML.php');
@@ -20,18 +21,18 @@ if(file_exists($fieldsJSON)){
 
 //Если приняты данные AJAX для записи в файл
 if($_POST['item'] && $_POST['fileName']){
-    $json=$_POST['item'];                       //данные
-    $fileName=$_POST['fileName'];               //имя файла
-    file_put_contents($fileName,$json);         //записываем в файл
+    $json=$_POST['item'];                           //данные
+    $fileName=$_POST['fileName'];                   //имя файла
+    file_put_contents($fileName,$json);             //записываем в файл
 }
 
-if($_POST['fID']){
-    $strXML=$XML->getFieldToID($fileXML,$_POST['fID']);
+if($_GET['fID']){
+    $strXML=$XML->getFieldToID($fileXML,$_GET['fID']);
 }
 
 function generateCatalog($template,$xml)
 {
-    include 'lib/'.$template;
+    include "lib/$template";
 }
 
 ?>
@@ -53,6 +54,8 @@ function generateCatalog($template,$xml)
 
     var fileJSON = '<?php echo $fileJSON;?>';
     var fieldsJSON = '<?php echo $fieldsJSON;?>';
+
+    var fID = '<?php echo $_GET['fID'];?>';
 </script>
 
 
@@ -84,12 +87,22 @@ function generateCatalog($template,$xml)
             <label>Цвет</label>
             <select id="selectColor">
                 <option>Выберете цвет</option>
-                <option value='#0000FF' style="background: #0000FF;">Blue</option>
-                <option value='#00FF00' style="background: #00FF00;">Green</option>
-                <option value='#FFFF00' style="background: #FFFF00;">Yellow</option>
-                <option value='#FF0000' style="background: #FF0000;">Red</option>
-                <option value='#006400' style="background: #006400;">DarkGreen</option>
-                <option value='#00FFFF' style="background: #00FFFF;">Cyan</option>
+                <option value='[0, 0, 255]' style="background: #0000FF;">Blue</option>
+                <option value='[0, 255, 0]' style="background: #00FF00;">Green</option>
+                <option value='[255, 255, 0]' style="background: #FFFF00;">Yellow</option>
+                <option value='[255, 0, 0]' style="background: #FF0000;">Red</option>
+                <option value='[0, 100, 0]' style="background: #006400;">DarkGreen</option>
+                <option value='[0, 255, 255]' style="background: #00FFFF;">Cyan</option>
+            </select>
+
+            <label>Прозрачность</label>
+            <select id="selectTransparency">
+                <option>Выберете прозрачность</option>
+                <option value='1'>0%</option>
+                <option value='0.75'>25%</option>
+                <option value='0.5'>50%</option>
+                <option value='0.25'>75%</option>
+                <option value='0'>100%</option>
             </select>
 
             <div class="btn-group">
@@ -131,8 +144,9 @@ function generateCatalog($template,$xml)
         <div id="PanelFieldInfo">
 <!--Инструменты-->
         <div class="alert alert-info" role="alert">
-            <b><input type="checkbox" id="checkSelect"  onclick="checkBoxSelectActive(this)">Ручной выбор<b> |
+            <a href="/" class="btn btn-default btn-xs">СБРОС</a> |
             <input type="submit" value="Экспорнт в PDF" class="btn btn-default btn-xs" onclick="btnClickExport()"/> |
+            <b><input type="checkbox" id="checkSelect"  onclick="checkBoxSelectActive(this)">Ручной выбор<b> |
         </div>
 <!--END Инструменты-->
 
@@ -144,7 +158,9 @@ function generateCatalog($template,$xml)
                 </h3>
             </div>
             <div class="panel-body">
-                <? generateCatalog('catFields.php',$strXML); ?>
+                <?
+                    generateCatalog('catFields.php',$strXML);
+                ?>
             </div>
         </div>
 <!-- END Список полей-->

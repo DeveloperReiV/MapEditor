@@ -58,6 +58,10 @@ function initMap(){
     closerPopup.onclick = function() {
         closePopup();
     };
+
+    if(fID!==undefined && fID!==null){
+        showOnCenter(fID);
+    }
 }
 
 //создание карты со слоем OSM и графическим слоем
@@ -205,7 +209,7 @@ function setStyleSelect(feature){
 
 //Функция рисования (полигон)
 //hand-если равен true, полигон рисуется от руки
-function drawInteraction(hand,id,number,description,color){
+function drawInteraction(hand,id,number,description,color,transparency){
     if(id===undefined){
         id=-1;
     }
@@ -221,6 +225,11 @@ function drawInteraction(hand,id,number,description,color){
     if(color===undefined){
         color='blue';
     }
+    if(transparency===undefined){
+        color=0.7;
+    }
+
+    color=settingColor(color,transparency);
 
     //тип взаимодействия "создание графических данных"
     drawInter = new ol.interaction.Draw({
@@ -359,19 +368,14 @@ function setDataPopup(feature){
             popup.setOffset([0,0]);
             popup.setPosition(getCoordinatesMaxY(coordinates[0]));  //установка положения для всплывающего окна
             contentPopup.innerHTML="Номер: "+feature.get('number')+"<br>"+"Описание: "+feature.get('description');
-            contentPopup.innerHTML+="<br><br><input type='submit' id='btnPopINFO' value='информация' class='btn btn-default btn-xs'/>";
+            window.id=feature.getId();
+            contentPopup.innerHTML+="<br><br><a href='?fID="+window.id+"' class='btn btn-default btn-xs'>информация</a>";
         }
-
         $(elementPopup).popover({                                   //открываем окно
             placement: 'top',                                       //расположение окна
             html: true
         });
         $(elementPopup).popover('show');
-
-        document.getElementById('btnPopINFO').onclick=function(){
-            showInfoField(feature);
-        }
-
     } else {
         $(elementPopup).popover('destroy');
         closePopup();
@@ -396,20 +400,6 @@ function closePopup(){
     popup.setPosition(undefined);
     closerPopup.blur();
     return false;
-}
-
-function showInfoField(feature){
-    //отправляем данные методом POST php обработчику в index.php
-    if(feature != null) {
-        $.ajax({
-            type: 'POST',
-            dataType: 'json',
-            url: 'index.php',
-            data: {
-                fID: feature.getId()
-            }
-        });
-    }
 }
 
 //вернуть из массива координат пару координат с максимальным значением по оси Y
@@ -459,11 +449,15 @@ function AddFieldToMap(id,number,description){
     clearAllInteraction();
 
     var color=document.getElementById('selectColor');
+    var transparency=document.getElementById('selectTransparency');
+
 
     color.onchange=function() {
-        if (color.value !== null) {
-            document.getElementById('btnAddSave').disabled = false;
-            drawInteraction(false, id, number, description, color.value);
+        transparency.onchange=function(){
+            if (color.value !== null && transparency.value != null) {
+                document.getElementById('btnAddSave').disabled = false;
+                drawInteraction(false, id, number, description, color.value, transparency.value);
+            }
         }
     }
 }
@@ -657,6 +651,13 @@ function showPanelOperation(div){
     document.getElementById(div).style.display='block';
     document.getElementById('PanelFieldInfo').style.display='none';
     closePopup();
+}
+
+//получаем массив RGB
+function settingColor(color, transparency){
+    color=color.slice(1,color.length-1);
+    var mas=color.split(',');
+    return [Number(mas[0]),Number(mas[1]),Number(mas[2]),Number(transparency)]
 }
 
 
