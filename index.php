@@ -144,7 +144,7 @@ function generateCatalog($template,$xml)
         <div id="PanelFieldInfo">
 <!--Инструменты-->
         <div class="alert alert-info" role="alert">
-            <a href="/" class="btn btn-default btn-xs">СБРОС</a> |
+            <a href="/" class="btn btn-default btn-xs">Все поля</a> |
             <input type="submit" value="Экспорнт в PDF" class="btn btn-default btn-xs" onclick="btnClickExport()"/> |
             <b><input type="checkbox" id="checkSelect"  onclick="checkBoxSelectActive(this)">Ручной выбор<b> |
         </div>

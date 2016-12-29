@@ -262,16 +262,6 @@ function selectInteraction(){
         map.addInteraction(selectInter);     //выбор объекта (реализуем взаимодействие)
     }
 
-    /*if(feature!==undefined){
-        var ft=select.getFeatures({
-            wrapX: false
-        });
-        //ft.clear();
-        ft.push(feature);
-        setStyleSelect(feature);
-        select.dispatchEvent('select');
-    }*/
-
     //событие "выделение объекта по клику"
     selectInter.on('select',function(evt){
         //задаем стиль выделенного объекта
