@@ -3,6 +3,7 @@ session_start();
 mb_internal_encoding("UTF-8");
 
 error_reporting(0);
+
 require_once('lib/strJSON.php');
 require_once('lib/fnXML.php');
 
